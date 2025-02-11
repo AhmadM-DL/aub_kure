@@ -1,1 +1,1 @@
-# aub_kure
+# Kure
