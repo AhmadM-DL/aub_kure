@@ -42,6 +42,11 @@ services:
     volumes:
       - stt_data:/app
     restart: always
+  
+  mood-tracker:
+    build: ./mood-tracker
+    ports:
+      - 5001:5000
  
 secrets:
    db_user:
