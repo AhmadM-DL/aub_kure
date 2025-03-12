@@ -1,0 +1,17 @@
+FROM python:3.12-alpine
+WORKDIR /code
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+
+# Install Postgres Dependencies
+RUN apk add --no-cache postgresql-libs
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev
+# Install Python Packages
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
+RUN apk --purge del .build-deps
+
+COPY . .
