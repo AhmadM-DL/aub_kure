@@ -1,15 +1,5 @@
-version: '3.8'  # Use 3.8 for better volume support
-
 services:
-  mood_analysis_api:
-    build: ./mood_app
+  mood-tracker:
+    build: ./mood-tracker
     ports:
       - "5000:5000"
-    volumes:
-      - huggingface_cache:/root/.cache/huggingface   # Persist model data
-      - ./mood_app:/app  # Mount only the code, not overwrite model
-    environment:
-      - PYTHONUNBUFFERED=1
-
-volumes:
-  huggingface_cache:  # Define a named volume for the model
