@@ -1,10 +1,8 @@
 services:
-  whisper-api:
-    build: .
+  speech-to-text:
+    build: ./speech-to-text
     ports:
       - "5000:5000"
     volumes:
       - .:/app
-    environment:
-      - PYTHONUNBUFFERED=1
-    restart: always # Ensures the service restarts on failure
+    restart: always

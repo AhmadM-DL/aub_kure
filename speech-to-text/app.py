@@ -34,6 +34,7 @@ def transcribe_audio():
         with open(temp_mp3, "wb") as audio_file:
             audio_file.write(audio_data)
 
+
         # Convert to WAV (Whisper performs better with WAV)
         temp_wav = "temp_audio.wav"
         audio = AudioSegment.from_file(temp_mp3).set_frame_rate(16000).set_channels(1)
