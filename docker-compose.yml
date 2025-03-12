@@ -1,0 +1,47 @@
+services:
+
+  db:
+    image: postgres:16
+    volumes:
+      - db_data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER_FILE=/run/secrets/db_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_user
+      - db_password
+
+  backend:
+    build: ./backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - 8000:8000
+    environment:
+      # Database 
+      - DB_HOST=db
+      - DB_NAME_FILE=/run/secrets/db_user       
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      # Application
+      - SECRET_KEY_FILE=/run/secrets/backend_secret
+      - DEBUG=False
+      - LOG_LEVEL=DEBUG
+      - ALLOWED_HOSTS=localhost 127.0.0.1
+    secrets:
+      - db_user
+      - db_password
+      - backend_secret
+    depends_on:
+      - db
+
+secrets:
+   db_user:
+     file: ./secrets/db_user.txt
+   db_password:
+     file: ./secrets/db_password.txt
+   backend_secret:
+     file: ./secrets/backend_secret.txt
+      
+volumes:
+  db_data:
