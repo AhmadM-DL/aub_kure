@@ -1,5 +1,6 @@
 flask
 torch
+--extra-index-url https://download.pytorch.org/whl/cpu
 openai-whisper
 ffmpeg-python
 gunicorn
