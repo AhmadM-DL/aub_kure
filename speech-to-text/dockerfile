@@ -5,19 +5,17 @@ RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /speech-to-text
 
-# Copy requirements first to leverage Docker layer caching
+# Copy requirements first (Docker caching optimization)
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy all application files
 COPY . .
-
-#  Pre-download the Whisper model at build time
-RUN python download_model.py  
 
 EXPOSE 5000
 
-# Run the application with Gunicorn
+# Start Gunicorn immediately (without downloading the model)
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+

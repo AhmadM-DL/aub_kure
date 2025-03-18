@@ -6,9 +6,19 @@ from pydub import AudioSegment
 
 app = Flask(__name__)
 
-print("Loading Whisper model from cache...")
-model = whisper.load_model("base")
-print("Whisper model loaded successfully!")
+import whisper
+import os
+
+cache_dir = "/root/.cache/whisper"
+model_path = os.path.join(cache_dir, "base.pt")
+
+if os.path.exists(model_path):
+    print("Loading Whisper model from cache...")
+    model = whisper.load_model("base")
+    print("Whisper model loaded successfully!")
+else:
+    print("Model not found! Please download it first.")
+
 
 # **Health Check Endpoint**
 @app.route('/health', methods=['GET'])
