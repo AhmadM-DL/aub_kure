@@ -4,28 +4,29 @@ it transforms audio file into base64 and this base 64 is the input for the api c
 
 """
 
-import requests
 import base64
+import requests
 
-# Function to encode audio file as Base64 string
 def encode_audio(audio_path):
     with open(audio_path, "rb") as audio_file:
         audio_content = audio_file.read()
-        return base64.b64encode(audio_content).decode("utf-8")  # Convert to string
+        return base64.b64encode(audio_content).decode("utf-8")
 
-# Encode the MP3 file
+# Path to your test MP3
 audio_base64 = encode_audio("./resources/test_audio.mp3")
 
-url = "http://localhost:5000/transcribe"
+# Send to GATEWAY
+url = "http://localhost:8001/pipeline"
 data = {
     "audio_base64": audio_base64
 }
 headers = {"Content-Type": "application/json"}
 
-
 response = requests.post(url, json=data, headers=headers)
 
-print(response.json())
+print("Status Code:", response.status_code)
+print("Response:", response.json())
+
 
 
 

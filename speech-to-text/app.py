@@ -62,7 +62,7 @@ def transcribe_audio():
         os.remove(temp_mp3)
         os.remove(temp_wav)
 
-        return jsonify({'transcription': result['text']})
+        return jsonify({'transcript': result['text']})
 
     except (base64.binascii.Error, ValueError, TypeError):
         return jsonify({'error': 'Invalid Base64 encoding'}), 400
