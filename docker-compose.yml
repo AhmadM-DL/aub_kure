@@ -43,6 +43,10 @@ services:
       - stt_data:/app
     restart: always
   
+  suicide-detection:
+    build: ./suicide-detection
+    ports:
+      - 5002:5000
   mood-tracker:
     build: ./mood-tracker
     ports:
