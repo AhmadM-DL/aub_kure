@@ -9,6 +9,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose port
 EXPOSE 5000
 
+# Adding download.py to the docker environment
+COPY download.py .
+
 # Copy application code
 COPY app.py .
 
