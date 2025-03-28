@@ -15,5 +15,5 @@ COPY download.py .
 # Copy application code
 COPY app.py .
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application with gunicorn
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
