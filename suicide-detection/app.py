@@ -6,8 +6,7 @@ app = Flask(__name__)
 # Load suicide risk classification model
 classifier = pipeline(
     "text-classification",
-    model="vibhorag101/roberta-base-suicide-prediction-phr",
-    device=-1  # Use CPU by default; change to 0 for GPU
+    model="vibhorag101/roberta-base-suicide-prediction-phr"
 )
 
 @app.route('/health', methods=['GET'])
