@@ -48,6 +48,11 @@ services:
     ports:
       - 5001:5000
 
+  suicide-detection:
+    build: ./suicide-detection
+    ports:
+      - 5002:5000
+
 secrets:
   db_user:
     file: ./secrets/db_user.txt
