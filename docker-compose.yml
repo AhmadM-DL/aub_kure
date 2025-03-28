@@ -42,10 +42,6 @@ services:
       - stt_data:/app
       - whisper_cache:/root/.cache/whisper # Cache Whisper model to prevent re-download
     restart: always
-    environment:
-      - FLASK_ENV=production
-    command: >
-      sh -c "python download_model.py && gunicorn -w 4 -b 0.0.0.0:5000 app:app"
 
   mood-tracker:
     build: ./mood-tracker

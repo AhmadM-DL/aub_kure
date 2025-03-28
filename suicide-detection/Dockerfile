@@ -12,8 +12,8 @@ EXPOSE 5000
 # Adding download.py to the docker environment
 COPY download.py .
 
+
 # Copy application code
 COPY app.py .
-
 # Run the application
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
