@@ -6,15 +6,26 @@ from pydub import AudioSegment
 
 app = Flask(__name__)
 
-# Load Whisper model
-model = whisper.load_model("base")
+import whisper
+import os
 
-# 🔹 **Health Check Endpoint**
+cache_dir = "/root/.cache/whisper"
+model_path = os.path.join(cache_dir, "base.pt")
+
+if os.path.exists(model_path):
+    print("Loading Whisper model from cache...")
+    model = whisper.load_model("base")
+    print("Whisper model loaded successfully!")
+else:
+    print("Model not found! Please download it first.")
+
+
+# **Health Check Endpoint**
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'OK', 'message': 'Whisper API is running'}), 200
 
-# 🔹 **Transcription Endpoint**
+# **Transcription Endpoint**
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     if not request.is_json:
