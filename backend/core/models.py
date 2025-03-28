@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 
 class User(AbstractUser):
@@ -16,6 +18,6 @@ class Note(models.Model):
 class Mood(models.Model):
     note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name="moods")
     mood = models.CharField(max_length=50)
-    confidence = models.FloatField()
+    confidence = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     created_at = models.DateTimeField(auto_now_add=True)
 

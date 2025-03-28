@@ -10,3 +10,13 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+
+class NoteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = ['text']
+
+class NoteRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = ['text', 'audio_url', 'created_at', 'is_suicidal']
