@@ -6,18 +6,21 @@ from pydub import AudioSegment
 
 app = Flask(__name__)
 
-import whisper
-import os
-
 cache_dir = "/root/.cache/whisper"
 model_path = os.path.join(cache_dir, "base.pt")
 
-if os.path.exists(model_path):
-    print("Loading Whisper model from cache...")
-    model = whisper.load_model("base")
-    print("Whisper model loaded successfully!")
-else:
-    print("Model not found! Please download it first.")
+model = None 
+
+def get_model():
+    global model
+    if model is None:
+       if os.path.exists(model_path):
+            print("Loading Whisper model from cache...")
+            model = whisper.load_model("base")
+            print("Whisper model loaded successfully!")
+       else: 
+           print("Model not found! Please download it first.")
+    return model
 
 
 # **Health Check Endpoint**
@@ -37,28 +40,22 @@ def transcribe_audio():
         return jsonify({'error': 'No base64 audio provided'}), 400
 
     try:
-        # Decode Base64 audio
         audio_data = base64.b64decode(data['audio_base64'])
         
-        # Save as a temporary MP3 file
         temp_mp3 = "temp_audio.mp3"
         with open(temp_mp3, "wb") as audio_file:
             audio_file.write(audio_data)
 
-
-        # Convert to WAV (Whisper performs better with WAV)
         temp_wav = "temp_audio.wav"
         audio = AudioSegment.from_file(temp_mp3).set_frame_rate(16000).set_channels(1)
         audio.export(temp_wav, format="wav")
 
-        # Ensure FFmpeg succeeded
         if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) == 0:
             return jsonify({'error': 'FFmpeg conversion failed. temp_audio.wav is empty or missing'}), 500
 
-        # Transcribe using Whisper
+        model = get_model()
         result = model.transcribe(temp_wav)
 
-        # Clean up temporary files
         os.remove(temp_mp3)
         os.remove(temp_wav)
 
