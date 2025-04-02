@@ -41,3 +41,9 @@ class NoteRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = ['text', 'audio_url', 'created_at', 'is_suicidal']
+
+class MarkSuicidalSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    class Meta:
+        model = Note
+        fields = ['id']
