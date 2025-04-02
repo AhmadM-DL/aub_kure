@@ -9,4 +9,6 @@ urlpatterns = [
     path('note/', views.create_note, name='Create Note'),
     path('note/mark_suicidal/', views.mark_note_as_suicidal, name='Mark Note As Suicidal'),
     path('notes/', views.user_notes, name='Retrieve Notes'),
+
+    path('mood/', views.register_mood, name='Register Mood'),
 ]
