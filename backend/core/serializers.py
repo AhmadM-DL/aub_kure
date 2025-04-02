@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, Note
+from .models import User, Note, Mood
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,10 +37,19 @@ class NoteCreateSerializer(serializers.ModelSerializer):
         model = Note
         fields = ['text']
 
+class MoodSerializer(serializers.ModelSerializer):
+    note_id = serializers.IntegerField(write_only=True)
+    class Meta:
+        model = Mood
+        fields = ['note_id', 'mood', 'confidence', 'created_at']
+        extra_kwargs = {'created_at': {'read_only': True}}
+
 class NoteRetrieveSerializer(serializers.ModelSerializer):
+    moods = MoodSerializer(many=True, read_only=True)
+
     class Meta:
         model = Note
-        fields = ['text', 'audio_url', 'created_at', 'is_suicidal']
+        fields = ['text', 'audio_url', 'created_at', 'is_suicidal', 'moods']
 
 class MarkSuicidalSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
