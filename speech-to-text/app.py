@@ -1,4 +1,5 @@
 import os
+import uuid
 import base64
 from flask import Flask, request, jsonify
 import whisper
@@ -6,11 +7,16 @@ from pydub import AudioSegment
 
 app = Flask(__name__)
 
+# volume
+TEMP_AUDIO_DIR = os.getenv("TEMP_AUDIO_DIR", "/tmp")
+os.makedirs(TEMP_AUDIO_DIR, exist_ok=True)
+
+# whisper
 cache_dir = "/root/.cache/whisper"
 model_path = os.path.join(cache_dir, "base.pt")
-
 model = None 
 
+# Check if model was downloaded , else return None
 def get_model():
     global model
     if model is None:
@@ -20,6 +26,7 @@ def get_model():
             print("Whisper model loaded successfully!")
        else: 
            print("Model not found! Please download it first.")
+           return None
     return model
 
 
@@ -40,24 +47,32 @@ def transcribe_audio():
         return jsonify({'error': 'No base64 audio provided'}), 400
 
     try:
+        # IDs should be same as the backend database ?  
         audio_data = base64.b64decode(data['audio_base64'])
-        
-        temp_mp3 = "temp_audio.mp3"
+        unique_id = str(uuid.uuid4())
+        temp_mp3 = os.path.join(TEMP_AUDIO_DIR, f"{unique_id}.mp3")
+        temp_wav = os.path.join(TEMP_AUDIO_DIR, f"{unique_id}.wav")
+
+
         with open(temp_mp3, "wb") as audio_file:
             audio_file.write(audio_data)
 
-        temp_wav = "temp_audio.wav"
+
         audio = AudioSegment.from_file(temp_mp3).set_frame_rate(16000).set_channels(1)
         audio.export(temp_wav, format="wav")
 
         if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) == 0:
-            return jsonify({'error': 'FFmpeg conversion failed. temp_audio.wav is empty or missing'}), 500
+            return jsonify({'error': 'FFmpeg conversion failed. WAV file is empty or missing'}), 500
 
         model = get_model()
+        if model is None:
+            return jsonify({'error': 'Whisper model not found. Please ensure it is downloaded to the cache.'}), 500
+
         result = model.transcribe(temp_wav)
 
-        os.remove(temp_mp3)
-        os.remove(temp_wav)
+        # uncomment to remove the recordings from the volume after processing
+        # os.remove(temp_mp3)
+        # os.remove(temp_wav)
 
         return jsonify({'transcription': result['text']})
 

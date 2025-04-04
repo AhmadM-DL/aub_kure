@@ -39,9 +39,12 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - stt_data:/app
-      - whisper_cache:/root/.cache/whisper # Cache Whisper model to prevent re-download
+      - stt_data:/app/audio_tmp  
+      - whisper_cache:/root/.cache/whisper
+    environment:
+      - TEMP_AUDIO_DIR=/app/audio_tmp  
     restart: always
+
 
   mood-tracker:
     build: ./mood-tracker
