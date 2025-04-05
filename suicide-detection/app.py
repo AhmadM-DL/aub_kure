@@ -1,13 +1,29 @@
+import os
 from flask import Flask, request, jsonify
 from transformers import pipeline
 
 app = Flask(__name__)
 
-# Load suicide risk classification model
-classifier = pipeline(
-    "text-classification",
-    model="vibhorag101/roberta-base-suicide-prediction-phr"
-)
+model = None 
+cache_dir = "/root/.cache/huggingface"  
+model_path = os.path.join(cache_dir, "hub", "models--vibhorag101--roberta-base-suicide-prediction-phr")
+
+def get_model():
+    global model
+    if model is None:
+       if os.path.exists(model_path):
+            print("Loading suicide detection model from cache...")
+            model = pipeline(
+                 "text-classification",
+                  model="vibhorag101/roberta-base-suicide-prediction-phr"
+            )
+            print("suicide detection model loaded successfully!")
+       else: 
+           print("Model not found! Please download it first.")
+    return model
+
+
+
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -25,9 +41,12 @@ def suicide_risk():
     text = data['text']
 
     # Classify text
-    results = classifier(text)
-    response = {"label": results[0]["label"], "confidence": round(results[0]["score"], 4)}
-    
+    model = get_model()
+    if(model is not None):
+       results = model(text)
+       response = {"label": results[0]["label"], "confidence": round(results[0]["score"], 4)}
+    else:
+       response ={"error": "Model is not downloaded"}
     print(response)
     return jsonify(response)
 
