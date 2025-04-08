@@ -1,0 +1,1 @@
+TEMP_AUDIO_DIR = "/tmp/kure/audio"

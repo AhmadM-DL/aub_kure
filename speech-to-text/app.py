@@ -4,19 +4,14 @@ import base64
 from flask import Flask, request, jsonify
 import whisper
 from pydub import AudioSegment
+from .config import TEMP_AUDIO_DIR, MODEL_CACHE_DIR
 
 app = Flask(__name__)
 
-# volume
-TEMP_AUDIO_DIR = os.getenv("TEMP_AUDIO_DIR", "/tmp")
 os.makedirs(TEMP_AUDIO_DIR, exist_ok=True)
-
-# whisper
-cache_dir = "/root/.cache/whisper"
-model_path = os.path.join(cache_dir, "base.pt")
+model_path = os.path.join(MODEL_CACHE_DIR, "base.pt")
 model = None 
 
-# Check if model was downloaded , else return None
 def get_model():
     global model
     if model is None:
@@ -30,12 +25,10 @@ def get_model():
     return model
 
 
-# **Health Check Endpoint**
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'OK', 'message': 'Whisper API is running'}), 200
 
-# **Transcription Endpoint**
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     if not request.is_json:
@@ -47,16 +40,13 @@ def transcribe_audio():
         return jsonify({'error': 'No base64 audio provided'}), 400
 
     try:
-        # IDs should be same as the backend database ?  
         audio_data = base64.b64decode(data['audio_base64'])
         unique_id = str(uuid.uuid4())
         temp_mp3 = os.path.join(TEMP_AUDIO_DIR, f"{unique_id}.mp3")
         temp_wav = os.path.join(TEMP_AUDIO_DIR, f"{unique_id}.wav")
 
-
         with open(temp_mp3, "wb") as audio_file:
             audio_file.write(audio_data)
-
 
         audio = AudioSegment.from_file(temp_mp3).set_frame_rate(16000).set_channels(1)
         audio.export(temp_wav, format="wav")
@@ -70,9 +60,8 @@ def transcribe_audio():
 
         result = model.transcribe(temp_wav)
 
-        # uncomment to remove the recordings from the volume after processing
-        # os.remove(temp_mp3)
-        # os.remove(temp_wav)
+        os.remove(temp_mp3)
+        os.remove(temp_wav)
 
         return jsonify({'transcription': result['text']})
 
