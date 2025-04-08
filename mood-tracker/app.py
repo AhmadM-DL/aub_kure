@@ -1,12 +1,13 @@
 # app.py
 from flask import Flask, request, jsonify
 from transformers import pipeline
+from config import MODEL_CACHE
+import os
 
 app = Flask(__name__)
 
 model = None 
-cache_dir = "/root/.cache/huggingface"  
-model_path = os.path.join(cache_dir, "hub", "models--facebook--bart-large-mnli")
+model_path = os.path.join(MODEL_CACHE, "hub", "models--facebook--bart-large-mnli")
 
 def get_model():
     global model
@@ -17,9 +18,11 @@ def get_model():
                  "zero-shot-classification",
                   model="facebook/bart-large-mnli")
             print("mood tracking model loaded successfully!")
+            success= True
        else: 
            print("Model not found! Please download it first.")
-    return model
+           success= False
+    return model, success
 
 
 @app.route('/health', methods=['GET'])
@@ -42,14 +45,16 @@ def sentiment():
     candidate_labels = ["Anger", "Disgust", "Sadness", "Surprise", "Fear", "Trust", "Joy", "Anticipation"]
     
     # Classify text
-    model = get_model()
-    if(model is not None):
-         results = model(text, candidate_labels,multi_label=True)
-         response = {label: round(score, 4) for label, score in zip(results["labels"], results["scores"])}
+    model, success = get_model()
+    if(success):
+        results = model(text, candidate_labels, multi_label=True)
+        response = {label: round(score, 4) for label, score in zip(results["labels"], results["scores"])}
+        response_status = 200
     else:
-       response ={"error": "Model is not downloaded"}
+       response ={"error": "Internal Server Error"}
+       response_status= 500
     print(response)
-    return jsonify(response)
+    return jsonify(response), response_status
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

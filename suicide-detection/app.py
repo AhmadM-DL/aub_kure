@@ -1,12 +1,12 @@
 import os
 from flask import Flask, request, jsonify
 from transformers import pipeline
+from config import MODEL_CACHE
 
 app = Flask(__name__)
 
 model = None 
-cache_dir = "/root/.cache/huggingface"  
-model_path = os.path.join(cache_dir, "hub", "models--vibhorag101--roberta-base-suicide-prediction-phr")
+model_path = os.path.join(MODEL_CACHE, "hub", "models--vibhorag101--roberta-base-suicide-prediction-phr")
 
 def get_model():
     global model
@@ -18,11 +18,11 @@ def get_model():
                   model="vibhorag101/roberta-base-suicide-prediction-phr"
             )
             print("suicide detection model loaded successfully!")
+            success = True
        else: 
            print("Model not found! Please download it first.")
-    return model
-
-
+           success = False
+    return model, success
 
 
 @app.route('/health', methods=['GET'])
@@ -41,12 +41,14 @@ def suicide_risk():
     text = data['text']
 
     # Classify text
-    model = get_model()
-    if(model is not None):
+    model, success = get_model()
+    if(success):
        results = model(text)
+       response_status = 200
        response = {"label": results[0]["label"], "confidence": round(results[0]["score"], 4)}
     else:
-       response ={"error": "Model is not downloaded"}
+       response_status= 500
+       response ={"error": "Internal Server Error"}
     print(response)
     return jsonify(response)
 
