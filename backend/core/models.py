@@ -3,12 +3,16 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
+from .managers import UserManager
 
 
 class User(AbstractUser):
     phone_number = models.CharField(unique=True, max_length=25, validators=[RegexValidator(r"^[0-9]{6,15}$")], blank=False, null=False)
+    email = models.EmailField(unique=True)
     username = None
     USERNAME_FIELD = 'phone_number'
+    REQUIRED_FIELDS = ['email']
+    objects = UserManager()
 
     def get_tokens_for_user(self):
         refresh = RefreshToken.for_user(self)
