@@ -18,9 +18,9 @@ jobs:
     steps:
       - name: Build Docker images
         run: |
-          docker-compose -f docker-compose.yml build
+          docker compose -f docker-compose.yml build
       - name: Run Docker-compose
         run: |
-          docker-compose -f docker-compose.yml up -d
-          docker-compose -f docker-compose.yml ps
+          docker compose -f docker-compose.yml up -d
+          docker compose -f docker-compose.yml ps
           sleep 30
