@@ -4,7 +4,7 @@ import base64
 from flask import Flask, request, jsonify
 import whisper
 from pydub import AudioSegment
-from .config import TEMP_AUDIO_DIR, MODEL_CACHE_DIR
+from config import TEMP_AUDIO_DIR, MODEL_CACHE_DIR
 
 app = Flask(__name__)
 
