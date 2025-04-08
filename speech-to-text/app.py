@@ -1,14 +1,15 @@
 import os
+import uuid
 import base64
 from flask import Flask, request, jsonify
 import whisper
 from pydub import AudioSegment
+from config import TEMP_AUDIO_DIR, MODEL_CACHE_DIR
 
 app = Flask(__name__)
 
-cache_dir = "/root/.cache/whisper"
-model_path = os.path.join(cache_dir, "base.pt")
-
+os.makedirs(TEMP_AUDIO_DIR, exist_ok=True)
+model_path = os.path.join(MODEL_CACHE_DIR, "base.pt")
 model = None 
 
 def get_model():
@@ -20,15 +21,14 @@ def get_model():
             print("Whisper model loaded successfully!")
        else: 
            print("Model not found! Please download it first.")
+           return None
     return model
 
 
-# **Health Check Endpoint**
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'OK', 'message': 'Whisper API is running'}), 200
 
-# **Transcription Endpoint**
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     if not request.is_json:
@@ -41,19 +41,23 @@ def transcribe_audio():
 
     try:
         audio_data = base64.b64decode(data['audio_base64'])
-        
-        temp_mp3 = "temp_audio.mp3"
+        unique_id = str(uuid.uuid4())
+        temp_mp3 = os.path.join(TEMP_AUDIO_DIR, f"{unique_id}.mp3")
+        temp_wav = os.path.join(TEMP_AUDIO_DIR, f"{unique_id}.wav")
+
         with open(temp_mp3, "wb") as audio_file:
             audio_file.write(audio_data)
 
-        temp_wav = "temp_audio.wav"
         audio = AudioSegment.from_file(temp_mp3).set_frame_rate(16000).set_channels(1)
         audio.export(temp_wav, format="wav")
 
         if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) == 0:
-            return jsonify({'error': 'FFmpeg conversion failed. temp_audio.wav is empty or missing'}), 500
+            return jsonify({'error': 'FFmpeg conversion failed. WAV file is empty or missing'}), 500
 
         model = get_model()
+        if model is None:
+            return jsonify({'error': 'Whisper model not found. Please ensure it is downloaded to the cache.'}), 500
+
         result = model.transcribe(temp_wav)
 
         os.remove(temp_mp3)
