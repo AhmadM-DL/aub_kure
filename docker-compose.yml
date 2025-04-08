@@ -47,11 +47,15 @@ services:
     build: ./mood-tracker
     ports:
       - 5001:5000
+    volumes:
+    - mood_tracker_cache:/root/.cache/huggingface
 
   suicide-detection:
     build: ./suicide-detection
     ports:
       - 5002:5000
+    volumes:
+    - suicide_detection_cache:/root/.cache/huggingface
 
 secrets:
   db_user:
@@ -64,3 +68,5 @@ secrets:
 volumes:
   db_data:
   whisper_cache:
+  suicide_detection_cache:
+  mood_tracker_cache:
