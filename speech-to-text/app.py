@@ -19,25 +19,29 @@ def get_model():
             print("Loading Whisper model from cache...")
             model = whisper.load_model("base")
             print("Whisper model loaded successfully!")
+            success= True
        else: 
            print("Model not found! Please download it first.")
-           return None
-    return model
+           success = False
+    return model, success
 
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'OK', 'message': 'Whisper API is running'}), 200
+    print("'status': 'OK', 'message': 'Whisper API is running")
+    return jsonify({'Message: The service is running properly'}), 200
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     if not request.is_json:
-        return jsonify({'error': 'Unsupported Media Type. Use application/json'}), 415
+        print("'error': 'Unsupported Media Type. Use application/json'")
+        return jsonify({'Internal Sever Error'}), 415
 
     data = request.get_json()
 
     if 'audio_base64' not in data:
-        return jsonify({'error': 'No base64 audio provided'}), 400
+        print("error : No base64 audio provided")
+        return jsonify({"Internal Sever Error"}), 400
 
     try:
         audio_data = base64.b64decode(data['audio_base64'])
@@ -52,23 +56,27 @@ def transcribe_audio():
         audio.export(temp_wav, format="wav")
 
         if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) == 0:
-            return jsonify({'error': 'FFmpeg conversion failed. WAV file is empty or missing'}), 500
+            print("'error': 'FFmpeg conversion failed. WAV file is empty or missing'")
+            return jsonify({'Internal Sever Error:'}), 500
 
-        model = get_model()
-        if model is None:
-            return jsonify({'error': 'Whisper model not found. Please ensure it is downloaded to the cache.'}), 500
+        model, success = get_model()
+        if not success:
+            print("Skipping transcription due to missing model")
+            return jsonify({'Internal Sever Error'}), 500
 
         result = model.transcribe(temp_wav)
 
         os.remove(temp_mp3)
         os.remove(temp_wav)
 
-        return jsonify({'transcription': result['text']})
+        return jsonify({'Internal Sever Error': result['text']})
 
     except (base64.binascii.Error, ValueError, TypeError):
-        return jsonify({'error': 'Invalid Base64 encoding'}), 400
+        print("'error': 'Invalid Base64 encoding")
+        return jsonify({'Internal Sever Error'}), 400
     except Exception as e:
-        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+        print(f"error: 'Internal server error: {str(e)}' ")
+        return jsonify({'Internal Sever Error'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
