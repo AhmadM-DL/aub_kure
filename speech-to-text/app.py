@@ -23,8 +23,7 @@ def get_model():
        else: 
            print("Model not found! Please download it first.")
            success = False
-           return None
-    return model
+    return model, success
 
 
 @app.route('/health', methods=['GET'])
