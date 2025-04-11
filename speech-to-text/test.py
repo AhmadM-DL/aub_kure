@@ -13,7 +13,7 @@ def encode_audio(audio_path):
         audio_content = audio_file.read()
         return base64.b64encode(audio_content).decode("utf-8")  
 
-audio_base64 = encode_audio("./resources/test_audio.mp3")
+audio_base64 = encode_audio("/home/hasanmog/AUB_Masters/projects/aub_kure/speech-to-text/resources/test_audio.mp3")
 
 url = "http://localhost:5000/transcribe"
 data = {
