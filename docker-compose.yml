@@ -42,20 +42,33 @@ services:
       - whisper_cache:/root/.cache/whisper
     restart: always
 
-
   mood-tracker:
     build: ./mood-tracker
     ports:
       - 5001:5000
     volumes:
-    - mood_tracker_cache:/root/.cache/huggingface
+      - mood_tracker_cache:/root/.cache/huggingface
 
   suicide-detection:
     build: ./suicide-detection
     ports:
       - 5002:5000
     volumes:
-    - suicide_detection_cache:/root/.cache/huggingface
+      - suicide_detection_cache:/root/.cache/huggingface
+  pipeline:
+    build: ./Orchestration
+    ports:
+      - "8080:8080"
+    depends_on: # waits for the dependencies to launch , before running
+      - backend
+      - speech-to-text
+      - mood-tracker
+      - suicide-detection
+    environment:
+      - whisper_url=http://speech-to-text:5000/transcribe
+      - mood_url=http://mood-tracker:5000/sentiment
+      - suicide_url=http://suicide-detection:5000/suicide-risk
+      - backend_url=http://backend:8000/api
 
 secrets:
   db_user:
