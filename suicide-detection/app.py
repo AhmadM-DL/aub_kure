@@ -10,6 +10,7 @@ model_path = os.path.join(MODEL_CACHE, "hub", "models--vibhorag101--roberta-base
 
 def get_model():
     global model
+    success = True
     if model is None:
        if os.path.exists(model_path):
             print("Loading suicide detection model from cache...")
@@ -18,7 +19,6 @@ def get_model():
                   model="vibhorag101/roberta-base-suicide-prediction-phr"
             )
             print("suicide detection model loaded successfully!")
-            success = True
        else: 
            print("Model not found! Please download it first.")
            success = False

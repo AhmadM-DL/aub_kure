@@ -3,6 +3,9 @@ import os
 from urllib.parse import urljoin
 from exceptions import NetworkException
 from config import SUICIDE_DETECTION_HOST, SUICIDE_DETECTION_PORT, SUICIDE_DETECTION_THRESHOLD, SUICIDE_DETECTION_LABEL
+import logging 
+
+logger = logging.getLogger(__name__)
 
 HOST = os.getenv(SUICIDE_DETECTION_HOST)
 PORT = os.getenv(SUICIDE_DETECTION_PORT)
@@ -15,6 +18,7 @@ SUICIDE_DETECTION_URI = "suicide-risk"
 
 def suicide_detect(text : str) -> bool:
     url = urljoin(BASE_URL, SUICIDE_DETECTION_URI)
+    logger.info(f"Calling {url}")
     payload = {
         "text": text
     }
@@ -26,6 +30,6 @@ def suicide_detect(text : str) -> bool:
         else:
             return False
     except Exception as e :
-        raise NetworkException(f"Internal server error")
+        raise NetworkException(f"Internal server error", e)
     
 

@@ -26,7 +26,7 @@ services:
       - SECRET_KEY_FILE=/run/secrets/backend_secret
       - DEBUG=False
       - LOG_LEVEL=DEBUG
-      - ALLOWED_HOSTS=localhost 127.0.0.1 orchestrator
+      - ALLOWED_HOSTS=localhost 127.0.0.1 backend
     secrets:
       - db_user
       - db_password
@@ -37,7 +37,7 @@ services:
   speech-to-text:
     build: ./speech-to-text
     ports:
-      - "5000:5000"
+      - 5000:5000
     volumes:
       - whisper_cache:/root/.cache/whisper
     restart: always
@@ -59,7 +59,7 @@ services:
   orchestrator:
     build: ./orchestrator
     ports:
-      - "8080:8080"
+      - 8080:8080
     environment:
       # backend
       - BACKEND_HOST=backend
@@ -69,13 +69,15 @@ services:
       - SPEECH_TO_TEXT_PORT=5000
       # suicide-detection
       - SUICIDE_DETECTION_HOST=suicide-detection
-      - SUICIDE_DETECTION_PORT=5001
+      - SUICIDE_DETECTION_PORT=5000
       - SUICIDE_DETECTION_THRESHOLD=0.6
-      - SUICIDE_DETECTION_LABEL=suicidal
+      - SUICIDE_DETECTION_LABEL=suicide
       # mood-tracker
       - MOOD_TRACKER_HOST=mood-tracker
-      - MOOD_TRACKER_PORT=5002
+      - MOOD_TRACKER_PORT=5000
       - MOOD_TRACKER_THRESHOLD=0.75
+      # application
+      - DEBUG_LEVEL=INFO
     depends_on:
       - backend
       - speech-to-text

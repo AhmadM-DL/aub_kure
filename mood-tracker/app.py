@@ -11,6 +11,7 @@ model_path = os.path.join(MODEL_CACHE, "hub", "models--facebook--bart-large-mnli
 
 def get_model():
     global model
+    success= True
     if model is None:
        if os.path.exists(model_path):
             print("Loading mood tracking model from cache...")
@@ -18,7 +19,6 @@ def get_model():
                  "zero-shot-classification",
                   model="facebook/bart-large-mnli")
             print("mood tracking model loaded successfully!")
-            success= True
        else: 
            print("Model not found! Please download it first.")
            success= False
