@@ -26,7 +26,7 @@ services:
       - SECRET_KEY_FILE=/run/secrets/backend_secret
       - DEBUG=False
       - LOG_LEVEL=DEBUG
-      - ALLOWED_HOSTS=localhost 127.0.0.1
+      - ALLOWED_HOSTS=localhost 127.0.0.1 backend
     secrets:
       - db_user
       - db_password
@@ -37,25 +37,52 @@ services:
   speech-to-text:
     build: ./speech-to-text
     ports:
-      - "5000:5000"
+      - 5000:5000
     volumes:
       - whisper_cache:/root/.cache/whisper
     restart: always
 
+  suicide-detection:
+    build: ./suicide-detection
+    ports:
+      - 5001:5000
+    volumes:
+      - suicide_detection_cache:/root/.cache/huggingface
 
   mood-tracker:
     build: ./mood-tracker
     ports:
-      - 5001:5000
-    volumes:
-    - mood_tracker_cache:/root/.cache/huggingface
-
-  suicide-detection:
-    build: ./suicide-detection
-    ports:
       - 5002:5000
     volumes:
-    - suicide_detection_cache:/root/.cache/huggingface
+      - mood_tracker_cache:/root/.cache/huggingface
+
+  orchestrator:
+    build: ./orchestrator
+    ports:
+      - 8080:8080
+    environment:
+      # backend
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=8000
+      # speech-to-text
+      - SPEECH_TO_TEXT_HOST=speech-to-text
+      - SPEECH_TO_TEXT_PORT=5000
+      # suicide-detection
+      - SUICIDE_DETECTION_HOST=suicide-detection
+      - SUICIDE_DETECTION_PORT=5000
+      - SUICIDE_DETECTION_THRESHOLD=0.6
+      - SUICIDE_DETECTION_LABEL=suicide
+      # mood-tracker
+      - MOOD_TRACKER_HOST=mood-tracker
+      - MOOD_TRACKER_PORT=5000
+      - MOOD_TRACKER_THRESHOLD=0.75
+      # application
+      - DEBUG_LEVEL=INFO
+    depends_on:
+      - backend
+      - speech-to-text
+      - mood-tracker
+      - suicide-detection
 
 secrets:
   db_user:

@@ -14,12 +14,12 @@ model = None
 
 def get_model():
     global model
+    success= True
     if model is None:
        if os.path.exists(model_path):
             print("Loading Whisper model from cache...")
             model = whisper.load_model("base")
             print("Whisper model loaded successfully!")
-            success= True
        else: 
            print("Model not found! Please download it first.")
            success = False
