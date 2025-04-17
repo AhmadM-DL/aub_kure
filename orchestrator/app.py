@@ -44,12 +44,12 @@ def process_note_pipeline(user_token, voice_note):
 def process_note():
     data = request.get_json()
 
-    if not data or "phone_number" not in data or "voice_note" not in data:
-        print("error: Missing phone_number or voice note")
+    if not data or "phone_number" not in data or "audio_base64" not in data:
+        print("error: Missing phone_number or audio_base64")
         return jsonify({"error": "Missing phone number or audio"}), 400 # message to be checked
 
     phone_number = data["phone_number"]
-    voice_note = data["voice_note"]
+    voice_note = data["audio_base64"]
 
     # authenticate
     authenticated, user_token = login_with_phone(phone_number)
