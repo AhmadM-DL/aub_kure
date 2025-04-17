@@ -33,6 +33,12 @@ def health_check():
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
+    
+    model, success = get_model()
+    if not success:
+        print("Skipping transcription due to missing model")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
     if not request.is_json:
         print("'error': 'Unsupported Media Type. Use application/json'")
         return jsonify({"error": "Internal Server Error"}), 415
@@ -57,11 +63,6 @@ def transcribe_audio():
 
         if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) == 0:
             print("'error': 'FFmpeg conversion failed. WAV file is empty or missing'")
-            return jsonify({"error": "Internal Server Error"}), 500
-
-        model, success = get_model()
-        if not success:
-            print("Skipping transcription due to missing model")
             return jsonify({"error": "Internal Server Error"}), 500
 
         result = model.transcribe(temp_wav)
