@@ -72,7 +72,7 @@ def user_register():
     phone_number = data["phone_number"]
     email = data["email"]
     password = data["password"]
-    
+    app.logger.info("Registering User")
     response = register_user(email , phone_number , password)
     print(response)
     return jsonify({"status": "ok"}), 200  # put the message as user registered successfully ? 
@@ -86,7 +86,7 @@ def password_login():
     
     phone_number = data["phone_number"]
     password = data["password"]
-    
+    app.logger.info("Authentication Check")
     authenticated , access_token = login_with_password(phone_number , password)
     
     if authenticated:
@@ -99,13 +99,15 @@ def password_login():
     
 @app.route("/notes", methods=["GET"])
 def get_user_notes():
+    app.logger.info("Authorization Check")
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer"):
         return jsonify({"error": "Authorization header missing or invalid"}), 401
-
+    app.logger.info("Authorization Success")
     user_token = auth_header.split(" ")[1]
 
     try:
+        app.logger.info("Fetching Notes")
         notes = get_notes(user_token)
         return jsonify({"notes": notes}), 200
     except Exception as e:
