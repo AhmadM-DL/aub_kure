@@ -88,7 +88,6 @@ def get_notes(user_token: str) -> list:
     }
     try:
         response = requests.get(url, headers=headers)
-        response = response.json()
         return response.json()
     except Exception as e :
         raise NetworkException(f"Internal server error", e)
