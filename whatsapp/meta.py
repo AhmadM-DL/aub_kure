@@ -39,6 +39,7 @@ def download_media(media_url):
     except Exception as e:
         raise NetworkException("Internal Server Error", e)
 
+
 def send_message(from_number_id, to_number, message):
     url = urljoin(META_GRAPH_URI, "/".join([from_number_id, "messages"]))
     headers = {"Authorization": f"Bearer {WHATSAPP_TOKEN}"}
