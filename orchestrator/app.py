@@ -1,6 +1,7 @@
 import base64, threading
 from flask import Flask, request, jsonify
-from backend import login_with_phone, create_note, mark_suicide, register_mood
+from backend import login_with_phone, create_note, mark_suicide
+from backend import register_mood, register, get_notes, login_with_password
 from speech_to_text import transcribe_audio
 from mood_tracker import mood_detect
 from suicide_detection import suicide_detect
@@ -40,19 +41,25 @@ def process_note_pipeline(user_token, voice_note):
         raise Exception("Internal Server Error")
 
 
-
 @app.route("/note", methods=["POST"])
 def process_note():
     data = request.get_json()
 
-    if not data or "phone_number" not in data or "audio_base64" not in data:
-        print("error: Missing phone_number or audio_base64")
-        return jsonify({"error": "Internal Server Error"}), 400
+    if not data:
+        print("error: Missing data")
+        return jsonify({"error": "Missing data"}), 400
+
+    if "phone_number" not in data:
+        print("error: Missing phone number")
+        return jsonify({"error": "Missing phone number"}), 400
+
+    if "audio_base64" not in data:
+        print("error: Missing audio_base64")
+        return jsonify({"error": "Missing audio"}), 400
 
     phone_number = data["phone_number"]
     voice_note = data["audio_base64"]
 
-    # authenticate
     authenticated, user_token = login_with_phone(phone_number)
 
     if authenticated:
@@ -61,6 +68,80 @@ def process_note():
     else:
         print("error: Authentication failed")
         return jsonify({"error": "Authentication failed"}), 401
+    
+        
+@app.route("/register" , methods = ["POST"])
+def register_user():
+    data = request.get_json()
+
+    if not data:
+        print("error: Missing data")
+        return jsonify({"error": "Missing data"}), 400
+
+    if "email" not in data:
+        print("error: Missing email")
+        return jsonify({"error": "Missing email"}), 400
+
+    if "phone_number" not in data:
+        print("error: Missing phone number")
+        return jsonify({"error": "Missing phone number"}), 400
+
+    if "password" not in data:
+        print("error: Missing password")
+        return jsonify({"error": "Missing password"}), 400
+
+    phone_number = data["phone_number"]
+    email = data["email"]
+    password = data["password"]
+    app.logger.info("Registering User ...")
+    success = register(email, phone_number, password)
+    if success:
+        return jsonify({"status": "ok"}), 200
+    else:
+        return jsonify({"status": "Registration failed"}), 400
+
+@app.route("/login" , methods = ["POST"])
+def login():
+    data = request.get_json()
+
+    if not data:
+        print("error: Missing data")
+        return jsonify({"error": "Missing data"}), 400
+
+    if "phone_number" not in data:
+        print("error: Missing phone number")
+        return jsonify({"error": "Missing phone number"}), 400
+
+    if "password" not in data:
+        print("error: Missing password")
+        return jsonify({"error": "Missing password"}), 400
+
+    phone_number = data["phone_number"]
+    password = data["password"]
+    app.logger.info("Authentication Check ...")
+    authenticated , access_token = login_with_password(phone_number , password)
+
+    if authenticated:
+        return jsonify({"access_token": access_token}), 200
+    else:
+        return jsonify({"error": "Authentication failed"}), 401
+    
+@app.route("/notes", methods=["GET"])
+def get_user_notes():
+
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer"):
+        return jsonify({"error": "Missing authorization header"}), 401
+
+    user_token = auth_header.split(" ")[1]
+
+    try:
+        app.logger.info("Fetching Notes ...")
+        notes = get_notes(user_token)
+        return jsonify({"notes": notes}), 200
+    except Exception as e:
+        print(f"Error fetching notes: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
