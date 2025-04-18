@@ -41,7 +41,10 @@ class MoodSerializer(serializers.ModelSerializer):
     note_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = Mood
-        fields = ['note_id', 'mood']
+        fields = ['note_id', 'mood', "created_at"]
+        extra_kwargs = {
+            'created_at': {'read_only': True}
+        }
 
 class NoteRetrieveSerializer(serializers.ModelSerializer):
     moods = MoodSerializer(many=True, read_only=True)
