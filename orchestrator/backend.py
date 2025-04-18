@@ -20,7 +20,7 @@ MARK_SUICIDE_URI = "api/note/mark_suicidal/"
 REGISTER_MOOD_URI = "api/mood/"
 
 
-def register_user(email : str , phone_number : str , password : str):
+def register(email: str, phone_number:str, password:str) -> bool:
     url = urljoin(BASE_URL, REGISTER_URI)
     payload = {
         "email": email,
@@ -28,9 +28,12 @@ def register_user(email : str , phone_number : str , password : str):
         "password": password,
     }
     try:
+        logger.info(f"Calling {url}")
         response = requests.post(url , json = payload)
-        response = response.json()
-        return response['message']
+        if response.status_code == 201:
+            return True
+        else:
+            return False
     except Exception as e :
         raise NetworkException(f"Internal server error", e)
     
