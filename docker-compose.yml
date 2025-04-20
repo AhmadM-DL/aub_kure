@@ -84,9 +84,16 @@ services:
       - mood-tracker
       - suicide-detection
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
   whatsapp:
     build: ./whatsapp
-    ports: 
+    ports:
       - 5003:5000
     environment:
       # application

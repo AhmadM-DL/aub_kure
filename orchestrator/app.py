@@ -1,4 +1,5 @@
 import base64, threading
+import time
 from flask import Flask, request, jsonify
 from backend import login_with_phone, create_note, mark_suicide
 from backend import register_mood, register, get_notes, login_with_password
@@ -6,16 +7,25 @@ from speech_to_text import transcribe_audio
 from mood_tracker import mood_detect
 from suicide_detection import suicide_detect
 from logging_config import setup_logging
+from metrics import transcription_time, suicide_check_time, mood_detection_time
+from prometheus_client import make_wsgi_app
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+
 
 setup_logging()
 
 app = Flask(__name__)
 
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/metrics': make_wsgi_app()
+})
+
 def process_note_pipeline(user_token, voice_note):
     try:
         # speech-to-text
         app.logger.info("Transcribing audio ...")
-        note_text = transcribe_audio(voice_note)
+        with transcription_time.time():
+            note_text = transcribe_audio(voice_note)
         app.logger.info(f"Transcribed audio: {note_text}")
 
         # create note
@@ -24,7 +34,8 @@ def process_note_pipeline(user_token, voice_note):
 
         # suicide detection
         app.logger.info("Checking suicidality ...")
-        is_suicidal = suicide_detect(text=note_text)
+        with suicide_check_time.time():
+            is_suicidal = suicide_detect(text=note_text)
         app.logger.info(f"Suicidality: {is_suicidal}")
         if is_suicidal:
             app.logger.info("Registering suicidality ...")
@@ -32,7 +43,8 @@ def process_note_pipeline(user_token, voice_note):
 
         # mood detection
         app.logger.info("Checking mood ...")
-        moods = mood_detect(note_text)
+        with mood_detection_time.time():
+            moods = mood_detect(note_text)
         app.logger.info(f"Moods: {moods}")
         for mood in moods:
             app.logger.info(f"Registering mood: {mood}")
