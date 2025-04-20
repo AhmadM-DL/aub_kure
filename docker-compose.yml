@@ -84,6 +84,15 @@ services:
       - mood-tracker
       - suicide-detection
 
+  web-app:
+    build: ./web-app
+    ports:
+      - "7860:7860"
+    environment:
+      - ORCHESTRATOR_URL=http://orchestrator:8080 
+    depends_on:
+      - orchestrator
+
 secrets:
   db_user:
     file: ./secrets/db_user.txt
