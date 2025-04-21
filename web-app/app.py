@@ -1,21 +1,12 @@
 import gradio as gr
-import requests
-import json
-import os
+import requests, json, os, io, base64
 from pathlib import Path
-import html
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-import io
-import base64
+from orchestrator import login, register, get_notes
+import html
 
 gr.set_static_paths(paths=[Path.cwd().absolute()/"assets"])
-ORCHESTRATOR_HOST = os.getenv("ORCHESTRATOR_HOST", "orchestrator")
-ORCHESTRATOR_BASE_URL = f"http://{ORCHESTRATOR_HOST}:8080"
-
-AUTH_ENDPOINT = f"{ORCHESTRATOR_BASE_URL}/login"
-REGISTER_ENDPOINT = f"{ORCHESTRATOR_BASE_URL}/register"
-GET_NOTES_ENDPOINT = f"{ORCHESTRATOR_BASE_URL}/notes"
 
 kure_theme = gr.themes.Base(
     primary_hue=gr.themes.Color(
@@ -275,146 +266,22 @@ body {
 
 """
 
-
-def make_api_request(endpoint, data=None, method="POST", headers=None):
-    try:
-        if method.upper() == "POST":
-            response = requests.post(endpoint, json=data, headers=headers, timeout=15)
-        elif method.upper() == "GET":
-            response = requests.get(endpoint, headers=headers, timeout=15)
-        else:
-             return None, f"Unsupported HTTP method: {method}"
-
-        response.raise_for_status()
-        return response, None
-
-    except requests.exceptions.HTTPError as http_err:
-        status_code = http_err.response.status_code
-        print(f"HTTP error occurred: {http_err} - {status_code}")
-        try:
-            error_details = http_err.response.json()
-            msg = error_details.get("error", error_details.get("detail", error_details.get("status", f"Server error ({status_code})")))
-            if isinstance(msg, dict):
-                msg = msg.get("message", f"Server error ({status_code})")
-
-        except (json.JSONDecodeError, AttributeError, ValueError):
-             msg = f"Server error ({status_code}). Check server logs."
-
-        if status_code == 401:
-             if "/login" in endpoint:
-                 msg = "Invalid phone number or password."
-             elif "/notes" in endpoint:
-                 msg = "Authentication failed or token expired. Please log in again."
-             else:
-                 msg = "Authentication failed."
-        elif status_code == 400 and "/register" in endpoint:
-             if "Registration failed" in msg:
-                 pass
-             elif "Missing" in msg:
-                 pass
-             else:
-                 msg = "Registration failed. The phone number might already be registered or input is invalid."
-        elif status_code == 400 and "/login" in endpoint:
-             msg = "Missing phone number or password."
-        elif status_code == 422:
-             msg = "Invalid data provided. Please check your input."
-        elif status_code == 500 and "/notes" in endpoint:
-            msg = "Could not retrieve notes due to a server issue."
-
-        return None, msg
-    except requests.exceptions.ConnectionError as conn_err:
-        print(f"Connection error occurred: {conn_err}")
-        return None, f"Cannot connect to the orchestrator at {ORCHESTRATOR_BASE_URL}. Please ensure it's running and accessible."
-    except requests.exceptions.Timeout as timeout_err:
-        print(f"Timeout error occurred: {timeout_err}")
-        return None, "The request timed out. Please try again later."
-    except requests.exceptions.RequestException as req_err:
-        print(f"An unexpected request error occurred: {req_err}")
-        return None, f"An unexpected network error occurred."
-    except Exception as e:
-         print(f"An unexpected error occurred during API request: {e}")
-         return None, f"An unexpected error occurred: {type(e).__name__}"
-
-
-def fetch_notes(token):
-    if not token:
-        return [], "No authentication token found. Cannot fetch notes."
-
-    print("Attempting to fetch notes...")
-    headers = {"Authorization": f"Bearer {token}"}
-    response, error_msg = make_api_request(GET_NOTES_ENDPOINT, method="GET", headers=headers)
-
-    if error_msg:
-        print(f"Failed to fetch notes: {error_msg}")
-        return [], error_msg
-
-    try:
-        fetched_data = response.json()
-        fetched_notes = fetched_data.get("notes")
-
-        if not isinstance(fetched_notes, list):
-             print(f"Error: Notes data received is not a list or missing 'notes' key: {type(fetched_notes)}")
-             return [], "Received invalid notes data format from server."
-
-        print(f"Successfully fetched {len(fetched_notes)} notes.")
-        return fetched_notes, None
-    except json.JSONDecodeError:
-        print("Error: Could not parse notes JSON data from response.")
-        return [], "Failed to understand notes data from server."
-    except Exception as e:
-        print(f"An unexpected error occurred parsing notes: {e}")
-        return [], f"An unexpected error occurred while processing notes: {type(e).__name__}"
-
-
-def login(phone, password):
-    print(f"Step 1: Attempting login for phone: {phone}")
-    login_error = ""
-    notes_error = ""
-    token = None
-    notes = []
+def login_and_get_notes(phone, password):
 
     if not phone or not password:
         login_error = "Phone number and password cannot be empty."
         return None, [], login_error, gr.update(visible=True), gr.update(visible=False)
 
-    response, login_error_msg = make_api_request(AUTH_ENDPOINT, data={"phone_number": phone, "password": password})
+    success, token = login(phone, password)
 
-    if login_error_msg:
-        login_error = login_error_msg
+    if not success:
+        login_error = "Login failed. Please check your credentials."
         return None, [], login_error, gr.update(visible=True), gr.update(visible=False)
-
-    try:
-        login_data = response.json()
-        token = login_data.get("access_token")
-        if not token:
-            print("Error: Login successful but no access token found in response body.")
-            login_error = "Login failed: Missing token in server response."
-            return None, [], login_error, gr.update(visible=True), gr.update(visible=False)
-
-        print(f"Step 1 Success: Received token: {token[:10]}...")
-
-        print("Step 2: Attempting to fetch notes with the new token...")
-        notes, notes_error_msg = fetch_notes(token)
-
-        if notes_error_msg:
-            notes_error = notes_error_msg
-            print(f"Step 2 Failed: {notes_error}")
-            return token, [], notes_error, gr.update(visible=True), gr.update(visible=False)
-
-        print("Step 2 Success: Notes fetched.")
+    else:
+        notes = get_notes(token)
         return token, notes, "", gr.update(visible=False), gr.update(visible=True)
 
-    except json.JSONDecodeError:
-        print("Error: Could not parse login JSON data from response.")
-        login_error = "Login failed: Invalid response format from server."
-        return None, [], login_error, gr.update(visible=True), gr.update(visible=False)
-    except Exception as e:
-        print(f"An unexpected error occurred after login: {e}")
-        login_error = f"An unexpected error occurred: {type(e).__name__}"
-        return None, [], login_error, gr.update(visible=True), gr.update(visible=False)
-
-
-def signup(email, phone, password, confirm_password):
+def register(email, phone, password, confirm_password):
     print(f"Attempting signup for email: {email}, phone: {phone}")
     signup_error = ""
 
@@ -428,31 +295,13 @@ def signup(email, phone, password, confirm_password):
         signup_error = "Passwords do not match."
         return None, [], signup_error, gr.update(visible=True), gr.update(visible=False)
 
-    response, signup_error_msg = make_api_request(
-        REGISTER_ENDPOINT,
-        data={"email": email, "phone_number": phone, "password": password}
-    )
+    success = register(email, phone, password)
 
-    if signup_error_msg:
-        return None, [], signup_error_msg, gr.update(visible=True), gr.update(visible=False)
-
-    print("Signup successful via orchestrator. Now attempting automatic login...")
-    try:
-        signup_response_data = response.json()
-        print(f"Signup response message: {signup_response_data.get('status')}")
-    except json.JSONDecodeError:
-        print("Warning: Could not parse signup success response body.")
-    except Exception as e:
-        print(f"Warning: Error reading signup success response body: {e}")
-
-    login_result_token, login_result_notes, login_error_msg, signup_page_update, journal_page_update = login(phone, password)
-
-    if login_error_msg:
-        print(f"Auto-login after signup failed: {login_error_msg}")
-        return login_result_token, login_result_notes, login_error_msg, gr.update(visible=True), gr.update(visible=False)
+    if not success:
+        signup_error = "Signup failed. Please check your details."
+        return None, [], signup_error, gr.update(visible=True), gr.update(visible=False)
     else:
-        print("Auto-login after signup successful.")
-        return login_result_token, login_result_notes, "", gr.update(visible=False), journal_page_update
+        return login_and_get_notes(phone, password)
 
 
 def logout():
@@ -714,13 +563,13 @@ with gr.Blocks(theme=kure_theme, css=custom_css) as demo:
     )
 
     login_button.click(
-        fn=login,
+        fn=login_and_get_notes,
         inputs=[login_phone_input, login_password_input],
         outputs=[access_token, notes_data, login_error_output, login_page, journal_page_ui]
     )
 
     create_account_button.click(
-        fn=signup,
+        fn=register,
         inputs=[
             signup_email_input,
             signup_phone_input,
@@ -776,10 +625,6 @@ with gr.Blocks(theme=kure_theme, css=custom_css) as demo:
 
 
 if __name__ == "__main__":
-    print(f"Connecting to Orchestrator at: {ORCHESTRATOR_BASE_URL}")
-    print(f"Login Endpoint (Auth): {AUTH_ENDPOINT}")
-    print(f"Register Endpoint: {REGISTER_ENDPOINT}")
-    print(f"Get Notes Endpoint: {GET_NOTES_ENDPOINT}")
     assets_path = Path.cwd().absolute() / "assets"
     if not assets_path.exists():
         print(f"Warning: Assets directory not found at {assets_path}. Background image may not load.")

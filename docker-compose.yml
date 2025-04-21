@@ -87,9 +87,10 @@ services:
   web-app:
     build: ./web-app
     ports:
-      - "7860:7860"
+      - 80:7860
     environment:
-      - ORCHESTRATOR_URL=http://orchestrator:8080 
+      - ORCHESTRATOR_HOST=orchestrator
+      - ORCHESTRATOR_POST=8080 
     depends_on:
       - orchestrator
 
