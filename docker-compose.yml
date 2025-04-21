@@ -102,6 +102,17 @@ services:
       - whatsapp_secret
       - handshake_secret
 
+  web-app:
+    build: ./web-app
+    ports:
+      - 80:7860
+    environment:
+      - ORCHESTRATOR_HOST=orchestrator
+      - ORCHESTRATOR_PORT=8080 
+      - DEBUG_LEVEL=INFO
+    depends_on:
+      - orchestrator
+
 secrets:
   db_user:
     file: ./secrets/db_user.txt
