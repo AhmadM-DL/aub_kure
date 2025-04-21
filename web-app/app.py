@@ -160,7 +160,7 @@ body {
     margin: 80px auto 20px auto;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0.05);
-    max-height: calc(100vh - 250px); /* Set a maximum height */
+    max-height: calc(100vh - 200px); /* Set a maximum height */
     overflow-y: hidden;
 }
 #journal-page h2 {
@@ -266,7 +266,6 @@ body {
     display: flex;
     justify-content: center;
     margin-top: 30px;
-    padding-bottom: 10px;
 }
 
 #journal-page .logout-button-container .gr-button {
@@ -572,8 +571,8 @@ def generate_mood_chart(mood_percentages):
     )
     
     plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular
-    plt.title('Your Mood Distribution (Last 30 Days)', fontsize=16, pad=20)
-    
+    plt.title('Your Mood Distribution (Last 30 Days)', fontsize=16, pad=20, color='#006400')    
+
     # Save the chart to a bytes buffer
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
@@ -586,7 +585,7 @@ def generate_mood_chart(mood_percentages):
     # Create HTML for the chart with centering
     chart_html = f"""
     <div style="text-align: center; margin: 20px auto;">
-        <img src="data:image/png;base64,{image_data}" alt="Mood Distribution Chart" style="max-width: 70%; height: auto;">
+        <img src="data:image/png;base64,{image_data}" alt="Mood Distribution Chart" style="max-width: 70%; height: auto; display: inline-block;">
     </div>
     """
     
