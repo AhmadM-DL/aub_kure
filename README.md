@@ -9,3 +9,5 @@ Kure is a mental health support platform designed to help individuals track and 
     * backend_secret.txt (Django App Secret - Used For Hashing)
     * db_password.txt
     * db_user.txt 
+    * handshake_secret.txt (Whatsapp Handshake Secret)
+    * whatsapp_secret.text (Whatsapp API Key)
