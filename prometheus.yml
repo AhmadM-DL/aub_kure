@@ -2,6 +2,6 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'pipeline'
+  - job_name: 'Orchastrator Time Metrics'
     static_configs:
-      - targets: ['pipeline:8080']
+      - targets: ['orchestrator:8080']
