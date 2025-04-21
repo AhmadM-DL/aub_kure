@@ -51,17 +51,6 @@ kure_theme = gr.themes.Base(
     input_radius="sm",
     block_radius="md",
 )
-""" NOTES, DONT CHANGE  
-background:
-  radial-gradient(circle at center,
-    rgba(255, 255, 255, 1) 0%,
-    rgba(245, 255, 245, 1) 80%,
-    rgba(245, 255, 245, 0) 100%
-  ),
-    url('/gradio_api/file=assets/border4.png') center center no-repeat;
-    .gradio-container {
-  background: url('/gradio_api/file=assets/image3.jpg') no-repeat center center;
-  background-size: cover;}"""
 
 
 custom_css = """
@@ -160,7 +149,7 @@ body {
     margin: 80px auto 20px auto;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0.05);
-    max-height: calc(100vh - 200px); /* Set a maximum height */
+    max-height: calc(100vh - 200px); 
     overflow-y: hidden;
 }
 #journal-page h2 {
@@ -174,20 +163,20 @@ body {
   font-size: 1.8em;
   font-weight: 700;
   overflow-y: visible;
-  scrollbar-width: none; /* Hide scrollbar for Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
 }
 
 #notes-display {
     padding: 0 10px;
-   overflow-y: scroll; /* Enable scrolling for the notes */
+   overflow-y: scroll; 
    flex-grow: 1;
-   scrollbar-width: none; /* Hide scrollbar for Firefox */
-   -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+   scrollbar-width: none; 
+   -ms-overflow-style: none;
 }
 
 #notes-display::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+  display: none; 
 }
 
 #notes-display .note-entry {
@@ -486,11 +475,9 @@ def calculate_mood_stats(notes_list):
     if not notes_list or not isinstance(notes_list, list):
         return None, "No notes available for analysis"
     
-    # Get current date for comparison
     current_date = datetime.now()
     one_month_ago = current_date - timedelta(days=30)
     
-    # Count mood occurrences
     mood_counts = {}
     total_moods = 0
     
@@ -514,11 +501,9 @@ def calculate_mood_stats(notes_list):
             except (ValueError, TypeError):
                 note_date = None
                 
-        # Skip if note is older than a month or date parsing failed
         if not note_date or note_date < one_month_ago:
             continue
             
-        # Count moods
         moods_data = entry.get('moods', [])
         if moods_data and isinstance(moods_data, list):
             for mood_item in moods_data:
@@ -527,11 +512,9 @@ def calculate_mood_stats(notes_list):
                     mood_counts[mood_name] = mood_counts.get(mood_name, 0) + 1
                     total_moods += 1
     
-    # If no moods found in the last month
     if total_moods == 0:
         return None, "No mood data found in the last 30 days"
     
-    # Calculate percentages
     mood_percentages = {mood: (count / total_moods) * 100 for mood, count in mood_counts.items()}
     
     return mood_percentages, None
@@ -541,10 +524,8 @@ def generate_mood_chart(mood_percentages):
     if not mood_percentages:
         return "<p style='text-align: center; color: #6C757D;'>No mood data available for the last 30 days.</p>"
     
-    # Create the pie chart
     plt.figure(figsize=(10, 8))
     
-    # Define colors for different moods
     mood_colors = {
         'Joy': '#0C7D03',
         'Anticipation': '#0C7D03',
@@ -556,10 +537,7 @@ def generate_mood_chart(mood_percentages):
         'Anger': '#B71C1C'
     }
     
-    # Extract colors for each mood
     colors = [mood_colors.get(mood, '#6C757D') for mood in mood_percentages.keys()]
-    
-    # Create the pie chart
     plt.pie(
         mood_percentages.values(), 
         labels=[f"{mood}\n{percentage:.1f}%" for mood, percentage in mood_percentages.items()],
@@ -570,19 +548,15 @@ def generate_mood_chart(mood_percentages):
         wedgeprops={'edgecolor': 'white', 'linewidth': 1}
     )
     
-    plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular
+    plt.axis('equal')  
     plt.title('Your Mood Distribution (Last 30 Days)', fontsize=16, pad=20, color='#006400')    
-
-    # Save the chart to a bytes buffer
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
     buffer.seek(0)
     
-    # Convert the image to base64 for embedding in HTML
     image_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
     plt.close()
     
-    # Create HTML for the chart with centering
     chart_html = f"""
     <div style="text-align: center; margin: 20px auto;">
         <img src="data:image/png;base64,{image_data}" alt="Mood Distribution Chart" style="max-width: 70%; height: auto; display: inline-block;">
@@ -644,18 +618,15 @@ def display_notes(notes_list):
         output += f"<div class='note-entry'>\n\n"
         output += f"<div class='note-first-line' style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'>\n" # Container for the first line
 
-        # Date and time
         output += f"<div class='note-meta' style='display: flex; align-items: center; gap: 6px; margin: 0;'><img src='/gradio_api/file=assets/calendar.png' alt='Calendar' style='height: 35px;margin-right: 10px;'><span><strong style='color: orange;'>{formatted_time}</strong></span></div>"
 
-        # Help link
         help_link_html = ""
         if is_suicidal:
             help_link_html = f"<div class='help-container' style='display: flex; align-items: center; gap: 10px; margin-left: auto;'><a href='{whatsapp_url}' target='_blank' class='help-link'>{help_text}</a><img src='/gradio_api/file=assets/help.png' alt='Help' style='height: 35px;'></div>\n"
         output += help_link_html
 
-        output += f"</div>\n" # Closing the note-first-line div
+        output += f"</div>\n" 
 
-        # Mood tags on the second line
         mood_tags_html = ""
         if moods_data and isinstance(moods_data, list):
             mood_names = [mood_item.get('mood') for mood_item in moods_data if isinstance(mood_item, dict) and 'mood' in mood_item]
@@ -663,7 +634,6 @@ def display_notes(notes_list):
                 mood_tags_html = f"<div class='note-moods' style='display: flex; align-items: center; gap: 10px; margin-bottom: 5px;'><img src='/gradio_api/file=assets/mood.png' alt='Moods' class='icon-mood' style='height: 27px; margin-left: 7px;margin-right: 10px;'><span>{''.join(f'<span class=\"mood-tag mood-{html.escape(mood_name.lower())}\">{html.escape(mood_name)}</span> ' for mood_name in mood_names)}</span></div>"
         output += mood_tags_html
 
-        # Line separator
         output += f"<hr style='border: 1px solid var(--mood-separator-color, rgba(235, 245, 235, 1)); margin: 5px 0;'>\n"
 
         output += f"<p class='note-content' style='display: flex; align-items: flex-start;'><img src='/gradio_api/file=assets/pen.png' alt='Note:' class='icon-writing' style='height: 27px; margin-left: 7px; margin-right: 10px; vertical-align: top;'>{content}</p>\n\n"
@@ -712,18 +682,15 @@ with gr.Blocks(theme=kure_theme, css=custom_css) as demo:
 
     with gr.Column(visible=False, elem_id="journal-page") as journal_page_ui:
         
-        # Container for the view toggle buttons
         with gr.Row(elem_classes=["view-toggle-container"]):
             view_notes_button = gr.Button("View Notes", variant="primary")
             view_mood_chart_button = gr.Button("View Mood Analysis", variant="primary")
         
-        # Notes display output
         notes_display_output = gr.Markdown(
             value="Notes will appear here...",
             elem_id="notes-display"
         )
         
-        # Mood chart display output (initially hidden)
         mood_chart_output = gr.Markdown(
             value="Mood analysis will appear here...",
             elem_id="mood-chart-display",
@@ -734,7 +701,6 @@ with gr.Blocks(theme=kure_theme, css=custom_css) as demo:
              logout_button = gr.Button("Logout", variant="primary")
 
     
-    # Connect the view toggle buttons
     view_notes_button.click(
         fn=show_notes_view,
         inputs=[],
