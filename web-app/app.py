@@ -3,7 +3,8 @@ import requests, json, os, io, base64
 from pathlib import Path
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-from orchestrator import login, register, get_notes
+from orchestrator import login, get_notes
+from orchestrator import register as orchestrator_register
 import html
 from logging_config import setup_logging
 
@@ -298,7 +299,7 @@ def register(email, phone, password, confirm_password):
         signup_error = "Passwords do not match."
         return None, [], signup_error, gr.update(visible=True), gr.update(visible=False)
 
-    success = register(email, phone, password)
+    success = orchestrator_register(email, phone, password)
 
     if not success:
         signup_error = "Signup failed. Please check your details."
