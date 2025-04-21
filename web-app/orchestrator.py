@@ -2,7 +2,9 @@ from config import ORCHESTRATOR_HOST, ORCHESTRATOR_PORT
 import os, requests
 from urllib.parse import urljoin
 from exceptions import NetworkException
+import logging
 
+logger = logging.getLogger(__name__)
 
 ORCHESTRATOR_HOST = os.getenv("ORCHESTRATOR_HOST")
 ORCHESTRATOR_PORT = os.getenv("ORCHESTRATOR_PORT")
@@ -23,7 +25,7 @@ def login(phone_number:str, password:str):
         response = requests.post(url , json = payload)
         if response.status_code==200:
             response = response.json()
-            return True, response["access"]
+            return True, response["access_token"]
         else:
             return False, None
     except Exception as e :
@@ -52,7 +54,8 @@ def get_notes(user_token:str) -> list:
     }
     try:
         response = requests.get(url, headers=headers)
-        return response.json()
+        logging.info(f"Response: {response.status_code} {response.content}")
+        return response.json()["notes"]
     except Exception as e :
         raise NetworkException(f"Internal server error", e)
      

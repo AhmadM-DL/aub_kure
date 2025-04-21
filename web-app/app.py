@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from orchestrator import login, register, get_notes
 import html
+from logging_config import setup_logging
+
+setup_logging()
 
 gr.set_static_paths(paths=[Path.cwd().absolute()/"assets"])
 
