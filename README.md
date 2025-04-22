@@ -16,6 +16,8 @@ Kure is a mental health support platform designed to help individuals track and 
     * handshake_secret.txt (Whatsapp Handshake Secret)
     * whatsapp_secret.text (Whatsapp API Key)
     * **N.B. for convenience the secrets are stored in github**
+* Compose
+   * `docker-compose up -d --build`     
 * Build database
     * `docker exec aub_kure-backend-1 python maange.py makemigrations`
     * `docker exec aub_kure-backend-1 python maange.py migrate`
