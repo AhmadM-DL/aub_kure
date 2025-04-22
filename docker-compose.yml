@@ -88,8 +88,17 @@ services:
     image: prom/prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     ports:
       - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
 
   whatsapp:
     build: ./whatsapp
@@ -120,9 +129,14 @@ secrets:
     file: ./secrets/whatsapp_secret.txt
   handshake_secret:
     file: ./secrets/handshake_secret.txt
+  grafana_admin_user:
+    file: ./secrets/grafana_admin_user.txt
+  grafana_admin_password:
+    file: ./secrets/grafana_admin_password.txt
 
 volumes:
   db_data:
   whisper_cache:
   suicide_detection_cache:
   mood_tracker_cache:
+  prometheus_data:
