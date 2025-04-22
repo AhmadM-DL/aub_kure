@@ -18,9 +18,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install curl
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
       - name: Build Docker images
         run: |
           docker compose build
       - name: Run Docker-compose
         run: |
           docker compose up -d
+
+      - name: Speech-to-text Health Check 
+        run: |
+          echo "Checking Speech-to-text Health ..."
+          curl http://localhost:5000/health
+          echo "Speech-to-text OK."
+
+      - name:  Suicide-detection Health Check
+        run: |
+          echo "Checking Suicide-detection Health ..."
+          curl http://localhost:5001/health
+          echo "Suicide-detection OK."
+
+      - name: Mood-tracker Health Check 
+        run: |
+          echo "Mood-tracker Health..."
+          curl -http://localhost:5002/health
+          echo "Mood-tracker OK."
