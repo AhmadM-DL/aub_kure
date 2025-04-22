@@ -21,7 +21,8 @@ Kure is a mental health support platform designed to help individuals track and 
     * `docker exec aub_kure-suicide-detection-1 python download.py`
 * Expose Whatsapp service through ngrok in the background
     * `ngrok http --url=your-domain 5003 > /dev/null &`
-* Deployment Endpoints
+
+## Deployment Endpoints
     * Web App: [http://18.224.45.207/](http://18.224.45.207/)
     * Dummy phone number: 96171177395
     * Dummy password: password 

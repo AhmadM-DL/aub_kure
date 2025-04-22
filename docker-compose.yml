@@ -84,9 +84,25 @@ services:
       - mood-tracker
       - suicide-detection
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
   whatsapp:
     build: ./whatsapp
-    ports: 
+    ports:
       - 5003:5000
     environment:
       # application
@@ -102,6 +118,17 @@ services:
       - whatsapp_secret
       - handshake_secret
 
+  web-app:
+    build: ./web-app
+    ports:
+      - 80:7860
+    environment:
+      - ORCHESTRATOR_HOST=orchestrator
+      - ORCHESTRATOR_PORT=8080 
+      - DEBUG_LEVEL=INFO
+    depends_on:
+      - orchestrator
+
 secrets:
   db_user:
     file: ./secrets/db_user.txt
@@ -113,9 +140,14 @@ secrets:
     file: ./secrets/whatsapp_secret.txt
   handshake_secret:
     file: ./secrets/handshake_secret.txt
+  grafana_admin_user:
+    file: ./secrets/grafana_admin_user.txt
+  grafana_admin_password:
+    file: ./secrets/grafana_admin_password.txt
 
 volumes:
   db_data:
   whisper_cache:
   suicide_detection_cache:
   mood_tracker_cache:
+  prometheus_data:
