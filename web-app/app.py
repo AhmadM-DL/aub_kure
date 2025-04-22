@@ -305,8 +305,9 @@ def register(email, phone, password, confirm_password):
         signup_error = "Signup failed. Please check your details."
         return None, [], signup_error, gr.update(visible=True), gr.update(visible=False)
     else:
-        return login_and_get_notes(phone, password)
-
+        signup_page=gr.update(visible=False)
+        login_page=gr.update(visible=True)
+        return None, [], signup_error, gr.update(visible=False), gr.update(visible=True)
 
 def logout():
     print("Logging out.")
@@ -580,7 +581,7 @@ with gr.Blocks(theme=kure_theme, css=custom_css) as demo:
             signup_password_input,
             signup_confirm_password_input
         ],
-        outputs=[access_token, notes_data, signup_error_output, signup_page, journal_page_ui]
+        outputs=[access_token, notes_data, signup_error_output, signup_page, login_page]
     )
 
     logout_button.click(
