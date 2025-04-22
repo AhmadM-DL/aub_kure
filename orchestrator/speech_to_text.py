@@ -19,6 +19,7 @@ def transcribe_audio(audio_base64 : str) -> str:
     try:
         response = requests.post(url , json = payload)
         response = response.json()
+        print("RESPONSE" , response)
         return response["Text"]
     except Exception as e :
         raise NetworkException(f"Internal server error", e)

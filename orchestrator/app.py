@@ -1,11 +1,14 @@
 import base64, threading
-from flask import Flask, request, jsonify
+import time
+from flask import Flask, request, jsonify, Response
 from backend import login_with_phone, create_note, mark_suicide
 from backend import register_mood, register, get_notes, login_with_password
 from speech_to_text import transcribe_audio
 from mood_tracker import mood_detect
 from suicide_detection import suicide_detect
 from logging_config import setup_logging
+from metrics import  speech_to_text_latency_ms, suicide_detection_latency_ms, mood_tracker_latency_ms
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 setup_logging()
 
@@ -15,7 +18,12 @@ def process_note_pipeline(user_token, voice_note):
     try:
         # speech-to-text
         app.logger.info("Transcribing audio ...")
+        # with speech_to_text_time.time():
+        start = time.time()
         note_text = transcribe_audio(voice_note)
+        end = time.time()
+        latency_ms = (end - start) * 1000
+        speech_to_text_latency_ms.set(latency_ms)
         app.logger.info(f"Transcribed audio: {note_text}")
 
         # create note
@@ -24,7 +32,12 @@ def process_note_pipeline(user_token, voice_note):
 
         # suicide detection
         app.logger.info("Checking suicidality ...")
+        
+        start = time.time()
         is_suicidal = suicide_detect(text=note_text)
+        end = time.time()
+        latency_ms = (end - start) * 1000
+        suicide_detection_latency_ms.set(latency_ms)
         app.logger.info(f"Suicidality: {is_suicidal}")
         if is_suicidal:
             app.logger.info("Registering suicidality ...")
@@ -32,14 +45,18 @@ def process_note_pipeline(user_token, voice_note):
 
         # mood detection
         app.logger.info("Checking mood ...")
+        mood_tracker_latency_ms
+        start = time.time()
         moods = mood_detect(note_text)
+        end = time.time()
+        latency_ms=(end - start) * 1000
+        mood_tracker_latency_ms.set(latency_ms)
         app.logger.info(f"Moods: {moods}")
         for mood in moods:
             app.logger.info(f"Registering mood: {mood}")
             register_mood(user_token=user_token, note_id=note_id, mood=mood)
     except Exception as e:
         raise Exception("Internal Server Error")
-
 
 @app.route("/note", methods=["POST"])
 def process_note():
@@ -142,6 +159,11 @@ def get_user_notes():
     except Exception as e:
         print(f"Error fetching notes: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
