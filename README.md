@@ -1,5 +1,7 @@
 # 🩺 Kure
 
+[![Docker Compose CI/CD](https://github.com/AhmadM-DL/aub_kure/actions/workflows/docker%20build%20and%20compose.yml/badge.svg?branch=main)](https://github.com/AhmadM-DL/aub_kure/actions/workflows/docker%20build%20and%20compose.yml)
+
 Kure is a mental health support platform designed to help individuals track and understand their emotional well-being through voice. By simply sending WhatsApp voice notes, users can record their thoughts, which are then transcribed, analyzed, and stored using AI. Kure detects emotional patterns, tracks mood shifts, and flags signs of suicidal ideation—empowering users and therapists with meaningful insights to support ongoing mental health care.
 
 # ⚙️ Architecture
