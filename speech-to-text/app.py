@@ -29,7 +29,7 @@ def get_model():
 @app.route('/health', methods=['GET'])
 def health_check():
     print("'status': 'OK', 'message': 'Whisper API is running")
-    return jsonify({'Message: The service is running properly'}), 200
+    return jsonify({"Message":"The service is running properly"}), 200
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
