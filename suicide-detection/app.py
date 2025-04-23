@@ -49,8 +49,7 @@ def suicide_risk():
     else:
        response_status= 500
        response ={"error": "Internal Server Error"}
-    print(response)
-    return jsonify(response)
+    return jsonify(response), response_status
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
