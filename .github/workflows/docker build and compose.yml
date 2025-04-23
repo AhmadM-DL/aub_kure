@@ -28,20 +28,25 @@ jobs:
         run: |
           docker compose up -d
 
-      - name: Speech-to-text Health Check 
+      - name: Speech-to-text Health Check
         run: |
           echo "Checking Speech-to-text Health ..."
           curl http://localhost:5000/health
           echo "Speech-to-text OK."
 
-      - name:  Suicide-detection Health Check
+      - name: Suicide-detection Health Check
         run: |
           echo "Checking Suicide-detection Health ..."
           curl http://localhost:5001/health
           echo "Suicide-detection OK."
 
-      - name: Mood-tracker Health Check 
+      - name: Mood-tracker Health Check
         run: |
           echo "Mood-tracker Health..."
           curl -http://localhost:5002/health
           echo "Mood-tracker OK."
+      - name: Run Unittests
+        run: |
+          docker exec aub_kure-speech-to-text-1 python -m unittest test.py
+          docker exec aub_kure-suicide-detection-1 python -m unittest test.py
+          docker exec aub_kure-mood-tracker-1 python -m unittest test.py
