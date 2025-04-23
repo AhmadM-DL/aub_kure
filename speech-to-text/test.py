@@ -1,31 +1,70 @@
-"""
-When using Base64 string as input , postman is adding new lines and spaces in the string , which is causing the code to pop an error. So this python code is for requests , 
-it transforms audio file into base64 and this base 64 is the input for the api call.
-
-"""
-
-import requests
+import os
+import unittest
 import base64
+import tempfile
+from unittest.mock import patch, MagicMock
+import app
 
 
-def encode_audio(audio_path):
-    with open(audio_path, "rb") as audio_file:
-        audio_content = audio_file.read()
-        return base64.b64encode(audio_content).decode("utf-8")  
+app.MODEL_CACHE_DIR = tempfile.gettempdir()
+app.model_path = os.path.join(app.MODEL_CACHE_DIR, "base.pt")
 
-audio_base64 = encode_audio("/home/hasanmog/AUB_Masters/projects/aub_kure/speech-to-text/resources/test_audio.mp3")
+class TestWhisperAPI(unittest.TestCase):
+    def setUp(self):
+        self.client = app.app.test_client()
+        self.temp_audio_path = "./resources/suicidal_sample.wav"
 
-url = "http://localhost:5000/transcribe"
-data = {
-    "audio_base64": audio_base64
-}
-headers = {"Content-Type": "application/json"}
+        with open(self.temp_audio_path, "rb") as audio:
+            self.valid_audio_base64 = base64.b64encode(audio.read()).decode("utf-8")
+
+    def test_health_check(self):
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Message", response.get_json())
+
+    @patch("app.get_model")
+    def test_transcribe_with_mock_model(self, mock_get_model):
+        mock_model = MagicMock()
+        mock_model.transcribe.return_value = {"text": "Test transcription from mock."}
+        mock_get_model.return_value = (mock_model, True)
+
+        response = self.client.post(
+            "/transcribe",
+            json={"audio_base64": self.valid_audio_base64}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Text", response.get_json())
+        self.assertEqual(response.get_json()["Text"], "Test transcription from mock.")
+        
+    @patch("app.get_model")
+    def test_transcribe_model_not_loaded(self, mock_get_model):
+        mock_get_model.return_value = (None, False)
+
+        response = self.client.post(
+            "/transcribe",
+            json={"audio_base64": self.valid_audio_base64}
+        )
+
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("error", response.get_json())
 
 
-response = requests.post(url, json=data, headers=headers)
+    @patch("app.get_model")
+    def test_transcribe_missing_audio_field(self, mock_get_model):
+        mock_model = MagicMock()
+        mock_get_model.return_value = (mock_model, True)
 
-print(response.json())
+        response = self.client.post("/transcribe", json={"wrong_field": "data"})
+        self.assertEqual(response.status_code, 400)
 
+    @patch("app.get_model")
+    def test_transcribe_invalid_base64(self, mock_get_model):
+        mock_model = MagicMock()
+        mock_get_model.return_value = (mock_model, True)
 
+        response = self.client.post("/transcribe", json={"audio_base64": "invalid@@@"})
+        self.assertEqual(response.status_code, 400)
 
-
+if __name__ == '__main__':
+    unittest.main()
