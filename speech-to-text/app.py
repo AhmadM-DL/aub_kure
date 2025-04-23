@@ -3,9 +3,11 @@ import uuid
 import base64
 from flask import Flask, request, jsonify
 import whisper
+from logging_config import setup_logging
 from pydub import AudioSegment
 from config import TEMP_AUDIO_DIR, MODEL_CACHE_DIR
 
+setup_logging()
 app = Flask(__name__)
 
 os.makedirs(TEMP_AUDIO_DIR, exist_ok=True)
@@ -17,18 +19,18 @@ def get_model():
     success= True
     if model is None:
        if os.path.exists(model_path):
-            print("Loading Whisper model from cache...")
+            app.logger.info("Loading Whisper model from cache...")
             model = whisper.load_model("base")
-            print("Whisper model loaded successfully!")
+            app.logger.info("Whisper model loaded successfully!")
        else: 
-           print("Model not found! Please download it first.")
+           app.logger.info("Model not found! Please download it first.")
            success = False
     return model, success
 
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    print("'status': 'OK', 'message': 'Whisper API is running")
+    app.logger.info("'status': 'OK', 'message': 'Whisper API is running")
     return jsonify({"Message":"The service is running properly"}), 200
 
 @app.route('/transcribe', methods=['POST'])
@@ -36,17 +38,17 @@ def transcribe_audio():
     
     model, success = get_model()
     if not success:
-        print("Skipping transcription due to missing model")
+        app.logger.info("Skipping transcription due to missing model")
         return jsonify({"error": "Internal Server Error"}), 500
     
     if not request.is_json:
-        print("'error': 'Unsupported Media Type. Use application/json'")
+        app.logger.info("'error': 'Unsupported Media Type. Use application/json'")
         return jsonify({"error": "Internal Server Error"}), 415
 
     data = request.get_json()
 
     if 'audio_base64' not in data:
-        print("error : No base64 audio provided")
+        app.logger.info("error : No base64 audio provided")
         return jsonify({"error": "Internal Server Error"}), 400
 
     try:
@@ -59,10 +61,12 @@ def transcribe_audio():
             audio_file.write(audio_data)
 
         audio = AudioSegment.from_file(temp_mp3).set_frame_rate(16000).set_channels(1)
-        audio.export(temp_wav, format="wav")
+        with open(temp_wav, "wb") as f:
+            audio.export(f, format="wav")
+
 
         if not os.path.exists(temp_wav) or os.path.getsize(temp_wav) == 0:
-            print("'error': 'FFmpeg conversion failed. WAV file is empty or missing'")
+            app.logger.info("'error': 'FFmpeg conversion failed. WAV file is empty or missing'")
             return jsonify({"error": "Internal Server Error"}), 500
 
         result = model.transcribe(temp_wav)
@@ -73,10 +77,10 @@ def transcribe_audio():
         return jsonify({'Text': result['text']})
 
     except (base64.binascii.Error, ValueError, TypeError):
-        print("'error': 'Invalid Base64 encoding")
+        app.logger.info("'error': 'Invalid Base64 encoding")
         return jsonify({"error": "Internal Server Error"}), 400
     except Exception as e:
-        print(f"error: 'Internal server error: {str(e)}' ")
+        app.logger.info(f"error: 'Internal server error: {str(e)}' ")
         return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == '__main__':
