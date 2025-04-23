@@ -4,6 +4,14 @@
 
 Kure is a mental health support platform designed to help individuals track and understand their emotional well-being through voice. By simply sending WhatsApp voice notes, users can record their thoughts, which are then transcribed, analyzed, and stored using AI. Kure detects emotional patterns, tracks mood shifts, and flags signs of suicidal ideation—empowering users and therapists with meaningful insights to support ongoing mental health care.
 
+# 💡 Functionality
+   * Interfaced using whatsapp so you can communicate your thoughts easily!
+   * Transcribe your voice through state of the art AI models.
+   * State of the art suicide detection language model.
+   * State of the art emotion detection language model based on a sound emotion [lexicon](https://nrc-publications.canada.ca/eng/view/object/?id=0b6a5b58-a656-49d3-ab3e-252050a7a88c).
+   * Access your notes easily using a simple web interface.
+   * Dashboard to monitor your mood.
+
 # ⚙️ Architecture
 ![](https://github.com/AhmadM-DL/aub_kure/blob/main/resources/Kure_Architecture.png?raw=true)
 
