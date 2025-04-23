@@ -43,7 +43,7 @@ jobs:
       - name: Mood-tracker Health Check 
         run: |
           echo "Mood-tracker Health..."
-          curl -http://localhost:5002/health
+          curl http://localhost:5002/health
           echo "Mood-tracker OK."
             - name: Run Unittests
       - name: AI Modules Unit Tests
