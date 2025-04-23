@@ -28,7 +28,7 @@ def get_model():
 @app.route('/health', methods=['GET'])
 def health():
     """Endpoint to check if the service is running."""
-    return jsonify({"status": "Healthy"}), 200
+    return jsonify({"status": "healthy"}), 200
 
 @app.route('/sentiment', methods=['POST'])
 def sentiment():
