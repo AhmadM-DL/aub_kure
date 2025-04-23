@@ -19,12 +19,12 @@ Kure is a mental health support platform designed to help individuals track and 
 * Compose
    * `docker-compose up -d --build`     
 * Build database
-    * `docker exec aub_kure-backend-1 python maange.py makemigrations`
-    * `docker exec aub_kure-backend-1 python maange.py migrate`
+    * `docker exec aub_kure-backend-1 python manage.py makemigrations`
+    * `docker exec aub_kure-backend-1 python manage.py migrate`
     * `docker restart aub_kure-backend-1`
 * Download Models
     * `docker exec aub_kure-mood-tracker-1 python download.py`
-    * `docker exec aub_kure-speech-to-text-1 python download_model.py`
+    * `docker exec aub_kure-speech-to-text-1 python download.py`
     * `docker exec aub_kure-suicide-detection-1 python download.py`
 * Expose Whatsapp service through ngrok in the background
     * `ngrok http --url=your-domain 5003 > /dev/null &`
