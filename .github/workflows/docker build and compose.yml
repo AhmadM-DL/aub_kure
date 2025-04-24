@@ -43,5 +43,28 @@ jobs:
       - name: Mood-tracker Health Check 
         run: |
           echo "Mood-tracker Health..."
-          curl -http://localhost:5002/health
+          curl http://localhost:5002/health
           echo "Mood-tracker OK."
+          
+      - name: AI Modules Unit Tests
+        run: |
+          docker exec aub_kure-speech-to-text-1 python -m unittest test.py
+          docker exec aub_kure-suicide-detection-1 python -m unittest test.py
+          docker exec aub_kure-mood-tracker-1 python -m unittest test.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

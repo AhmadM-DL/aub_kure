@@ -18,14 +18,8 @@ class FlaskAppTests(unittest.TestCase):
     def test_mood_tracking_valid_input(self, mock_get_model):
         mock_model = MagicMock()
         mock_model.return_value = {
-            'Anger': 0.05,
-            'Disgust': 0.1,
-            'Sadness': 0.1,
-            'Surprise': 0.15,
-            'Fear': 0.2,
-            'Trust': 0.25,
-            'Joy': 0.85,
-            'Anticipation': 0.3
+        "labels": ["Anger", "Disgust", "Sadness", "Surprise", "Fear", "Trust", "Joy", "Anticipation"],
+        "scores": [0.05, 0.1, 0.1, 0.15, 0.2, 0.25, 0.85, 0.3]
         }
         mock_get_model.return_value = (mock_model, True)
 
