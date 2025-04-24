@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whatsapp
+  labels:
+    app: whatsapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whatsapp
+  template:
+    metadata:
+      labels:
+        app: whatsapp
+    spec:
+      containers:
+        - name: whatsapp
+          image: ama318/aub_kure-whatsapp:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: WHATSAPP_API_FILE
+              value: /run/secrets/whatsapp/whatsapp_secret.txt
+            - name: HANDSHAKE_SECRET_FILE
+              value: /run/secrets/handshake/handshake_secret.txt
+            - name: DEBUG_LEVEL
+              value: INFO
+            - name: ORCHESTRATOR_HOST
+              value: orchestrator
+            - name: ORCHESTRATOR_PORT
+              value: "8080"
+          volumeMounts:
+            - name: whatsapp-secret-volume
+              mountPath: /run/secrets/whatsapp
+              readOnly: true
+            - name: handshake-secret-volume
+              mountPath: /run/secrets/handshake
+              readOnly: true
+      volumes:
+        - name: whatsapp-secret-volume
+          secret:
+            secretName: whatsapp-secret
+        - name: handshake-secret-volume
+          secret:
+            secretName: handshake-secret

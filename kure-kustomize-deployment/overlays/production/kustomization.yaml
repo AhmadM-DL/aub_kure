@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+secretGenerator:
+  - name: db-secret
+    type: Opaque
+    files:
+      - db_user=../../overlays/production/secrets/db_user.txt
+      - db_password=../../overlays/production/secrets/db_password.txt
+
+  - name: backend-secret
+    type: Opaque
+    files:
+      - backend_secret=../../overlays/production/secrets/backend_secret.txt
+
+  - name: whatsapp-secret
+    type: Opaque
+    files:
+      - whatsapp_secret.txt=../../overlays/production/secrets/whatsapp_secret.txt
+
+  - name: handshake-secret
+    type: Opaque
+    files:
+      - handshake_secret.txt=../../overlays/production/secrets/handshake_secret.txt

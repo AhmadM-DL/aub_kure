@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  labels:
+    app: web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: web-app
+          image: ama318/aub_kure-web-app:latest
+          ports:
+            - containerPort: 7860
+          env:
+            - name: ORCHESTRATOR_HOST
+              value: orchestrator
+            - name: ORCHESTRATOR_PORT
+              value: "8080"
+            - name: DEBUG_LEVEL
+              value: INFO
