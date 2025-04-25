@@ -53,7 +53,7 @@ Kure is a mental health support platform designed to help individuals track and 
 * Build database
     * `kubectl exec deployment/backend -- python manage.py makemigrations`
     * `kubectl exec deployment/backend -- python manage.py migrate`
-    * `kubectl rollout restart deployment/backend`
+    * `kubectl rollout restart deployment deployment/backend`
 * Download Models
     * `kubectl exec deployment/mood-tracker -- python download.py`
     * `kubectl exec deployment/speech-to-text -- python download.py`
