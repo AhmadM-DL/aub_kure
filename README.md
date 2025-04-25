@@ -64,4 +64,7 @@ Kure is a mental health support platform designed to help individuals track and 
 # ▶️ Deployment Endpoints
 * Web App: [http://18.224.45.207/](http://18.224.45.207/)
 * Dummy phone number: 96171177395
-* Dummy password: password 
+* Dummy password: password
+
+# 🛝 Slides
+* Canva Slides: [Link Here](https://www.canva.com/design/DAGlbkLfh5E/n5lD47Diiejwu7OzerHdUg/edit?utm_content=DAGlbkLfh5E&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
