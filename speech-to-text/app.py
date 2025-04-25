@@ -20,7 +20,7 @@ def get_model():
     if model is None:
        if os.path.exists(model_path):
             app.logger.info("Loading Whisper model from cache...")
-            model = whisper.load_model("base")
+            model = whisper.load_model("base.en")
             app.logger.info("Whisper model loaded successfully!")
        else: 
            app.logger.info("Model not found! Please download it first.")
