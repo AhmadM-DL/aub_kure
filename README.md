@@ -15,7 +15,7 @@ Kure is a mental health support platform designed to help individuals track and 
 # ⚙️ Architecture
 ![](https://github.com/AhmadM-DL/aub_kure/blob/main/resources/Kure_Architecture.png?raw=true)
 
-# ⬇️ Deployment
+# ⬇️ Deployment Docker
 * Clone the repositroy
 * 🔐 Create a secrets folder in the repo and including the following files/secrets:
     * backend_secret.txt (Django App Secret - Used For Hashing)
@@ -34,6 +34,28 @@ Kure is a mental health support platform designed to help individuals track and 
     * `docker exec aub_kure-mood-tracker-1 python download.py`
     * `docker exec aub_kure-speech-to-text-1 python download.py`
     * `docker exec aub_kure-suicide-detection-1 python download.py`
+* Expose Whatsapp service through ngrok in the background
+    * `ngrok http --url=your-domain 5003 > /dev/null &`
+ 
+# Deployment K8s
+* Clone the repositroy
+* 🔐 Create a secrets folder in kure-kustomize-deployment/overlays/production/ and including the following files/secrets:
+    * backend_secret.txt (Django App Secret - Used For Hashing)
+    * db_password.txt
+    * db_user.txt 
+    * handshake_secret.txt (Whatsapp Handshake Secret)
+    * whatsapp_secret.text (Whatsapp API Key)
+    * **N.B. for convenience the secrets are stored in github**
+* Build
+   * `kubectl apply -k kure-kustomize-deployment/overlays/production`
+* Build database
+    * `kubectl exec deployment/backend python manage.py makemigrations`
+    * `kubectl exec deployment/backend python manage.py migrate`
+    * `kubectl rollout restart deployment/backend`
+* Download Models
+    * `kubectl exec deployment/mood-tracker python download.py`
+    * `kubectl exec deployment/speech-to-text python download.py`
+    * `kubectl exec deployment/suicide-detection python download.py`
 * Expose Whatsapp service through ngrok in the background
     * `ngrok http --url=your-domain 5003 > /dev/null &`
 
