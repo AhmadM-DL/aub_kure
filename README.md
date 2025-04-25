@@ -47,15 +47,17 @@ Kure is a mental health support platform designed to help individuals track and 
     * whatsapp_secret.text (Whatsapp API Key)
     * **N.B. for convenience the secrets are stored in github**
 * Build
-   * `kubectl apply -k kure-kustomize-deployment/overlays/production`
+    * `kubectl apply -k kure-kustomize-deployment/overlays/production`
+* Make sure all images are pulled and pods are in `Running` state
+    * `kubectl get pods`   
 * Build database
-    * `kubectl exec deployment/backend python manage.py makemigrations`
-    * `kubectl exec deployment/backend python manage.py migrate`
+    * `kubectl exec deployment/backend -- python manage.py makemigrations`
+    * `kubectl exec deployment/backend -- python manage.py migrate`
     * `kubectl rollout restart deployment/backend`
 * Download Models
-    * `kubectl exec deployment/mood-tracker python download.py`
-    * `kubectl exec deployment/speech-to-text python download.py`
-    * `kubectl exec deployment/suicide-detection python download.py`
+    * `kubectl exec deployment/mood-tracker -- python download.py`
+    * `kubectl exec deployment/speech-to-text -- python download.py`
+    * `kubectl exec deployment/suicide-detection -- python download.py`
 * Expose Whatsapp service through ngrok in the background
     * `ngrok http --url=your-domain 5003 > /dev/null &`
 
