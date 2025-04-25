@@ -15,7 +15,7 @@ Kure is a mental health support platform designed to help individuals track and 
 
 # ⚙️ Architecture
 
-![](https://github.com/AhmadM-DL/aub_kure/blob/main/resources/Kure_Architecture.png?raw=true)
+![](https://github.com/AhmadM-DL/aub_kure/blob/main/resources/Kure_Architecture.png)
 
 # ⬇️ Deployment Docker
 
