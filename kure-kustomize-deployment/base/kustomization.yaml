@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - cluster-resources/resizable-storageclass.yaml
+
+  - pvcs/db-pvc.yaml
+  - pvcs/whisper-cache-pvc.yaml
+  - pvcs/suicide-detection-cache-pvc.yaml
+  - pvcs/mood-tracker-cache-pvc.yaml
+  - pvcs/prometheus-data-pvc.yaml
+
+  - configmaps/prometheus-cm.yaml
+  - configmaps/grafana-provisioning-cm.yaml
+  - configmaps/grafana-dashboards-cm.yaml
+
+  - services/db-service.yaml
+  - services/backend-service.yaml
+  - services/speech-to-text-service.yaml
+  - services/suicide-detection-service.yaml
+  - services/mood-tracker-service.yaml
+  - services/orchestrator-service.yaml
+  - services/prometheus-service.yaml
+  - services/grafana-service.yaml
+  - services/whatsapp-service.yaml
+  - services/web-app-service.yaml
+
+  - deployments/db-deployment.yaml
+  - deployments/backend-deployment.yaml
+  - deployments/speech-to-text-deployment.yaml
+  - deployments/suicide-detection-deployment.yaml
+  - deployments/mood-tracker-deployment.yaml
+  - deployments/orchestrator-deployment.yaml
+  - deployments/prometheus-deployment.yaml
+  - deployments/grafana-deployment.yaml
+  - deployments/whatsapp-deployment.yaml
+  - deployments/web-app-deployment.yaml

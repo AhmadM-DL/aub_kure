@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  labels:
+    app: orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+        - name: orchestrator
+          image: ama318/aub_kure-orchestrator:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BACKEND_HOST
+              value: backend
+            - name: BACKEND_PORT
+              value: "8000"
+            - name: SPEECH_TO_TEXT_HOST
+              value: speech-to-text
+            - name: SPEECH_TO_TEXT_PORT
+              value: "5000"
+            - name: SUICIDE_DETECTION_HOST
+              value: suicide-detection
+            - name: SUICIDE_DETECTION_PORT
+              value: "5000"
+            - name: SUICIDE_DETECTION_THRESHOLD
+              value: "0.6"
+            - name: SUICIDE_DETECTION_LABEL
+              value: "suicide"
+            - name: MOOD_TRACKER_HOST
+              value: mood-tracker
+            - name: MOOD_TRACKER_PORT
+              value: "5000"
+            - name: MOOD_TRACKER_THRESHOLD
+              value: "0.75"
+            - name: DEBUG_LEVEL
+              value: INFO

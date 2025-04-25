@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: suicide-detection
+  labels:
+    app: suicide-detection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: suicide-detection
+  template:
+    metadata:
+      labels:
+        app: suicide-detection
+    spec:
+      containers:
+        - name: suicide-detection
+          image: ama318/aub_kure-suicide-detection:latest
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: suicide-detection-cache-storage
+              mountPath: /root/.cache/huggingface
+      volumes:
+        - name: suicide-detection-cache-storage
+          persistentVolumeClaim:
+            claimName: suicide-detection-cache-pvc

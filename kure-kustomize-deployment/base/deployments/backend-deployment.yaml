@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: ama318/aub_kure-backend:latest
+          command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_HOST
+              value: db
+            - name: DB_NAME_FILE
+              value: /run/secrets/db/db_user
+            - name: DB_PASSWORD_FILE
+              value: /run/secrets/db/db_password
+            - name: SECRET_KEY_FILE
+              value: /run/secrets/backend/backend_secret
+            - name: DEBUG
+              value: "False"
+            - name: LOG_LEVEL
+              value: DEBUG
+            - name: ALLOWED_HOSTS
+              value: localhost 127.0.0.1 backend
+          volumeMounts:
+            - name: db-secret-volume
+              mountPath: /run/secrets/db
+              readOnly: true
+            - name: backend-secret-volume
+              mountPath: /run/secrets/backend
+              readOnly: true
+      volumes:
+        - name: db-secret-volume
+          secret:
+            secretName: db-secret
+        - name: backend-secret-volume
+          secret:
+            secretName: backend-secret
