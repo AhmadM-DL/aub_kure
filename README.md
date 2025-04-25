@@ -39,7 +39,7 @@ Kure is a mental health support platform designed to help individuals track and 
  
 # Deployment K8s
 * Clone the repositroy
-* 🔐 Create a secrets folder in kure-kustomize-deployment/overlays/production/ and including the following files/secrets:
+* 🔐 Create a secrets folder in kure-kustomize-deployment/overlays/production/ and including the following files:
     * backend_secret.txt (Django App Secret - Used For Hashing)
     * db_password.txt
     * db_user.txt 
