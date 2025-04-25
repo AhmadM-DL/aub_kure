@@ -63,7 +63,7 @@ Kure is a mental health support platform designed to help individuals track and 
 
 # ▶️ Deployment Endpoints
 
-- Web App: [http://18.224.45.207/](http://18.224.45.207/)
+- Web App: [http://3.133.156.16/](3.133.156.16)
 - Dummy phone number: 96171177395
 - Dummy password: password
 
