@@ -1,0 +1,183 @@
+name: Kubernetes CI/CD with Kustomize
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: docker.io/ama318
+  BACKEND_IMG_NAME: aub_kure-backend
+  STT_IMG_NAME: aub_kure-speech-to-text
+  SUICIDE_IMG_NAME: aub_kure-suicide-detection
+  MOOD_IMG_NAME: aub_kure-mood-tracker
+  ORCH_IMG_NAME: aub_kure-orchestrator
+  WHATSAPP_IMG_NAME: aub_kure-whatsapp
+  WEBAPP_IMG_NAME: aub_kure-web-app
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ama318
+          password: ${{ secrets.DOCKER_HUB_API_KEY }}
+
+      - name: Build and Push Docker Images
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.BACKEND_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.BACKEND_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Speech-to-Text
+        uses: docker/build-push-action@v5
+        with:
+          context: ./speech-to-text
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.STT_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.STT_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Suicide Detection
+        uses: docker/build-push-action@v5
+        with:
+          context: ./suicide-detection
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.SUICIDE_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.SUICIDE_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Mood Tracker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mood-tracker
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.MOOD_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.MOOD_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Orchestrator
+        uses: docker/build-push-action@v5
+        with:
+          context: ./orchestrator
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.ORCH_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.ORCH_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push WhatsApp
+        uses: docker/build-push-action@v5
+        with:
+          context: ./whatsapp
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.WHATSAPP_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.WHATSAPP_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Web App
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web-app
+          push: True
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.WEBAPP_IMG_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.WEBAPP_IMG_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Install Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Set Kustomize Image Tags
+        run: |
+          cd kure-kustomize-deployment/overlays/production
+          kustomize edit set image ama318/aub_kure-backend=${{ env.REGISTRY }}/${{ env.BACKEND_IMG_NAME }}:${{ env.IMAGE_TAG }}
+          kustomize edit set image ama318/aub_kure-speech-to-text=${{ env.REGISTRY }}/${{ env.STT_IMG_NAME }}:${{ env.IMAGE_TAG }}
+          kustomize edit set image ama318/aub_kure-suicide-detection=${{ env.REGISTRY }}/${{ env.SUICIDE_IMG_NAME }}:${{ env.IMAGE_TAG }}
+          kustomize edit set image ama318/aub_kure-mood-tracker=${{ env.REGISTRY }}/${{ env.MOOD_IMG_NAME }}:${{ env.IMAGE_TAG }}
+          kustomize edit set image ama318/aub_kure-orchestrator=${{ env.REGISTRY }}/${{ env.ORCH_IMG_NAME }}:${{ env.IMAGE_TAG }}
+          kustomize edit set image ama318/aub_kure-whatsapp=${{ env.REGISTRY }}/${{ env.WHATSAPP_IMG_NAME }}:${{ env.IMAGE_TAG }}
+          kustomize edit set image ama318/aub_kure-web-app=${{ env.REGISTRY }}/${{ env.WEBAPP_IMG_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Set up Kubeconfig
+        run: |
+          mkdir -p ${HOME}/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ${HOME}/.kube/config
+          chmod 600 ${HOME}/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -k kure-kustomize-deployment/overlays/production/
+
+      - name: Verify Deployment Rollouts
+        run: |
+          kubectl rollout status deployment/backend --timeout=120s
+          kubectl rollout status deployment/speech-to-text --timeout=120s
+          kubectl rollout status deployment/suicide-detection --timeout=120s
+          kubectl rollout status deployment/mood-tracker --timeout=120s
+          kubectl rollout status deployment/orchestrator --timeout=120s
+          kubectl rollout status deployment/whatsapp --timeout=120s
+          kubectl rollout status deployment/web-app --timeout=120s
+
+      - name: Port Forward for Health Checks
+        run: |
+          kubectl port-forward service/speech-to-text 5000:5000 &
+          kubectl port-forward service/suicide-detection 5001:5000 &
+          kubectl port-forward service/mood-tracker 5002:5000 &
+          sleep 10
+
+      - name: Speech-to-Text Health Check
+        run: |
+          curl --fail --max-time 10 http://127.0.0.1:5000/health
+
+      - name: Suicide Detection Health Check
+        run: |
+          curl --fail --max-time 10 http://127.0.0.1:5001/health
+
+      - name: Mood Tracker Health Check
+        run: |
+          curl --fail --max-time 10 http://127.0.0.1:5002/health
+
+      - name: Get AI Pod Names
+        run: |
+          echo "STT_POD=$(kubectl get pods -l app=speech-to-text --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}')" >> $GITHUB_ENV
+          echo "SUICIDE_POD=$(kubectl get pods -l app=suicide-detection --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}')" >> $GITHUB_ENV
+          echo "MOOD_POD=$(kubectl get pods -l app=mood-tracker --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}')" >> $GITHUB_ENV
+
+      - name: Run AI Unit Tests
+        run: |
+          echo "Running Speech-to-Text Unit Tests..."
+          kubectl exec $STT_POD -- python -m unittest test.py
+          echo "Running Suicide Detection Unit Tests..."
+          kubectl exec $SUICIDE_POD -- python -m unittest test.py
+          echo "Running Mood Tracker Unit Tests..."
+          kubectl exec $MOOD_POD -- python -m unittest test.py
