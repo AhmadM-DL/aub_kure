@@ -19,7 +19,7 @@ Kure is a mental health support platform designed to help individuals track and 
 
 # ⬇️ Deployment Docker
 
-- Clone the repositroy
+- Clone the repositroy (Use releases)
 - 🔐 Create a secrets folder in the repo and including the following files/secrets:
   - backend_secret.txt (Django App Secret - Used For Hashing)
   - db_password.txt
@@ -35,12 +35,13 @@ Kure is a mental health support platform designed to help individuals track and 
   - `docker exec aub_kure-mood-tracker-1 python download.py`
   - `docker exec aub_kure-speech-to-text-1 python download.py`
   - `docker exec aub_kure-suicide-detection-1 python download.py`
-- Expose Whatsapp service through ngrok in the background
+- Expose Whatsapp service through ngrok (Whatsapp requires HTTPS endpoint) in the background
   - `ngrok http --url=your-domain 5003 > /dev/null &`
+- Open localhost:80 to access the web application
 
 # Deployment K8s
 
-- Clone the repositroy
+- Clone the repositroy  (Use releases)
 - 🔐 Create a secrets folder in kure-kustomize-deployment/overlays/production/ and including the following files:
   - backend_secret.txt (Django App Secret - Used For Hashing)
   - db_password.txt
@@ -58,8 +59,9 @@ Kure is a mental health support platform designed to help individuals track and 
   - `kubectl exec deployment/mood-tracker -- python download.py`
   - `kubectl exec deployment/speech-to-text -- python download.py`
   - `kubectl exec deployment/suicide-detection -- python download.py`
-- Expose Whatsapp service through ngrok in the background
+- Expose Whatsapp service through ngrok (Whatsapp requires HTTPS endpoint) in the background
   - `ngrok http --url=your-domain 30015 > /dev/null &`
+- Open localhost:30014 to access teh web application
 
 # ▶️ Deployment Endpoints
 
