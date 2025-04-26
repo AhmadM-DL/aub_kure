@@ -61,7 +61,7 @@ Kure is a mental health support platform designed to help individuals track and 
   - `kubectl exec deployment/suicide-detection -- python download.py`
 - Expose Whatsapp service through ngrok (Whatsapp requires HTTPS endpoint) in the background
   - `ngrok http --url=your-domain 30015 > /dev/null &`
-- Open localhost:30014 to access teh web application
+- Open localhost:30014 to access the web application
 
 # ▶️ Deployment Endpoints
 
