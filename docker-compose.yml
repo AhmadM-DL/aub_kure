@@ -120,14 +120,16 @@ services:
       - whatsapp_secret
       - handshake_secret
 
-  web-app:
-    build: ./web-app
+  frontend:
+    build: ./frontend
     ports:
-      - 80:7860
+      - 80:3000
     environment:
-      - ORCHESTRATOR_HOST=orchestrator
-      - ORCHESTRATOR_PORT=8080
+      # application
       - DEBUG_LEVEL=INFO
+      # orchestrator  
+      - NEXT_PUBLIC_ORCHESTRATOR_HOST=localhost
+      - NEXT_PUBLIC_ORCHESTRATOR_PORT=8080
     depends_on:
       - orchestrator
 
