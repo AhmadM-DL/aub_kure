@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const Header = () => {
+const Header = ({ headerState = 'default' }) => {
   return (
     <header className="w-full bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,35 +12,63 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Navigation as */}
+          {/* Conditional Navigation */}
           <nav className="hidden md:flex space-x-8 items-center">
-            <a href="#about" className="text-black hover:underline hover:underline-offset-4 transition">
-              About
-            </a>
-            <a href="#features" className="text-black hover:underline hover:underline-offset-4 transition">
-              Features
-            </a>
-            <a href="#contact" className="text-black hover:underline hover:underline-offset-4 transition">
-              Contact
-            </a>
+            {/* Show nav items only in 'default' state */}
+            {headerState === 'default' && (
+              <>
+                <a href="#about" className="text-black hover:underline hover:underline-offset-4 transition">
+                  About
+                </a>
+                <a href="#features" className="text-black hover:underline hover:underline-offset-4 transition">
+                  Features
+                </a>
+                <a href="#contact" className="text-black hover:underline hover:underline-offset-4 transition">
+                  Contact
+                </a>
+              </>
+            )}
 
             {/* Action Buttons */}
-            <Link href="/signup">
-              <button className="ml-2 px-2 py-2 bg-white text-black border border-black hover:bg-gray-100 transition">
-                Sign Up
-              </button>
-            </Link>
-            <Link href="/login">
-              <button className="ml-2 px-2 py-2 bg-white text-black border border-black hover:bg-gray-100 transition">
-                Login
-              </button>
-            </Link>
-          </nav>
+            <div className="flex space-x-2">
+              {/* Empty State: No buttons */}
+              {headerState === 'empty' ? null : (
+                <>
+                  {/* Default State: Show Sign Up and Login buttons */}
+                  {headerState === 'default' && (
+                    <>
+                      <Link href="/signup">
+                        <button className="px-4 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400 transition cursor-pointer">
+                          Sign Up
+                        </button>
+                      </Link>
+                      <Link href="/login">
+                        <button className="px-4 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400 transition cursor-pointer">
+                          Login
+                        </button>
+                      </Link>
+                    </>
+                  )}
 
-          {/* Mobile Menu Button (placeholder for later) */}
-          <div className="md:hidden">
-            {/* Placeholder for mobile menu */}
-          </div>
+                  {/* Logged In State: Show Profile and Logout buttons */}
+                  {headerState === 'loggedin' && (
+                    <>
+                      <Link href="/logout">
+                        <button
+                          onClick={() => {
+                            alert("Logged out");
+                          }}
+                          className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition cursor-pointer"
+                        >
+                          Logout
+                        </button>
+                      </Link>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </nav>
         </div>
       </div>
     </header>

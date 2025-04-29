@@ -9,7 +9,7 @@ const Hero = () => {
         {/* Left side - Big Text */}
         <div className="w-full md:w-1/2 px-10 flex justify-center md:justify-start">
           <h1 className="text-4xl md:text-5xl font-bold text-black leading-tight text-center md:text-left">
-            Your deserve<br />to be understood and healed.
+            You deserve<br />to be understood and healed.
           </h1>
         </div>
 

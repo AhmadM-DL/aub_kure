@@ -80,6 +80,7 @@ services:
       - MOOD_TRACKER_THRESHOLD=0.75
       # application
       - DEBUG_LEVEL=INFO
+      - COOKIE_HTTPS=False
     depends_on:
       - backend
       - speech-to-text

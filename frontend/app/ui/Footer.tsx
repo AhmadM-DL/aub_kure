@@ -21,9 +21,6 @@ const Footer = () => {
               <Link href="/terms" className="text-black hover:underline hover:underline-offset-4 transition">
                 Terms
               </Link>
-              <Link href="/contact" className="text-black hover:underline hover:underline-offset-4 transition">
-                Contact
-              </Link>
             </div>
           </div>
         </div>

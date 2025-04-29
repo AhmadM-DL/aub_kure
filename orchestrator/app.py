@@ -1,6 +1,5 @@
-import base64, threading
-import time
-from flask import Flask, request, jsonify, Response
+import threading, time, os
+from flask import Flask, request, jsonify, Response, make_response
 from backend import login_with_phone, create_note, mark_suicide
 from backend import register_mood, register, get_notes, login_with_password
 from speech_to_text import transcribe_audio
@@ -9,10 +8,12 @@ from suicide_detection import suicide_detect
 from logging_config import setup_logging
 from metrics import  speech_to_text_latency_ms, suicide_detection_latency_ms, mood_tracker_latency_ms
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from config import COOKIE_HTTPS
 
 setup_logging()
 
 app = Flask(__name__)
+cookie_https = os.getenv(COOKIE_HTTPS).lower()=="true"
 
 def process_note_pipeline(user_token, voice_note):
     try:
@@ -139,22 +140,30 @@ def login():
     authenticated , access_token = login_with_password(phone_number , password)
 
     if authenticated:
-        return jsonify({"access_token": access_token}), 200
+        response = make_response(jsonify({"message": "Login successful"}), 200)
+        response.set_cookie(
+            "access_token",
+            access_token,
+            httponly=True,
+            secure=cookie_https,
+            samesite='Lax',
+            max_age=7200
+        )
+        return response
     else:
         return jsonify({"error": "Authentication failed"}), 401
     
 @app.route("/notes", methods=["GET"])
 def get_user_notes():
 
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer"):
-        return jsonify({"error": "Missing authorization header"}), 401
+    access_token = request.cookies.get("access_token")
 
-    user_token = auth_header.split(" ")[1]
+    if not access_token:
+        return jsonify({"error": "Missing access token"}), 401
 
     try:
         app.logger.info("Fetching Notes ...")
-        notes = get_notes(user_token)
+        notes = get_notes(access_token)
         return jsonify({"notes": notes}), 200
     except Exception as e:
         print(f"Error fetching notes: {e}")
