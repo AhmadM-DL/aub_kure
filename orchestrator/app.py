@@ -118,6 +118,16 @@ def register_user():
     else:
         return jsonify({"status": "Registration failed"}), 400
 
+@app.route("/logout", methods=["POST"])
+def logout():
+    response = make_response(jsonify({"message": "Logout successful"}), 200)
+    response.set_cookie(
+        "access_token",
+        "",
+        max_age=0
+    )
+    return response
+
 @app.route("/login" , methods = ["POST"])
 def login():
     data = request.get_json()
