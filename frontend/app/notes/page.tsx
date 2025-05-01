@@ -45,7 +45,12 @@ const NotesPage = () => {
         }
 
         const data = await response.json();
-        setNotes(data.notes || []);
+
+        const sortedNotes = (data.notes || []).sort(
+          (a: Note, b: Note) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setNotes(sortedNotes);
+        
       } catch (err: unknown) {
         if (err instanceof Error) setError(err.message);
       } finally {
