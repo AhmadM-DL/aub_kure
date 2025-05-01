@@ -55,7 +55,7 @@ const LoginPage = () => {
         return;
       }
 
-      router.push("/home");
+      router.push("/notes");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Something went wrong.");

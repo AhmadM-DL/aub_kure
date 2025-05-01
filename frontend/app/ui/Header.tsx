@@ -58,7 +58,7 @@ const Header = ({ headerState = 'default' }) => {
             )}
 
             {/* Action Buttons */}
-            <div className="flex space-x-2">
+            <div className="md:flex space-x-8 items-center">
               {/* Empty State: No buttons */}
               {headerState === 'empty' ? null : (
                 <>
@@ -81,14 +81,18 @@ const Header = ({ headerState = 'default' }) => {
                   {/* Logged In State: Show Profile and Logout buttons */}
                   {headerState === 'loggedin' && (
                     <>
-                      <Link href="/logout">
-                        <button
-                          onClick={handleLogout}
-                          className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition cursor-pointer"
-                        >
-                          Logout
-                        </button>
+                      <Link href={"/notes"} className="text-black hover:underline hover:underline-offset-4 transition">
+                        Notes
                       </Link>
+                      <Link href={"/dashboard"} className="text-black hover:underline hover:underline-offset-4 transition">
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="px-4 py-2 bg-gray-300 text-black rounded-full hover:bg-gray-400 transition cursor-pointer"
+                      >
+                        Logout
+                      </button>
                     </>
                   )}
                 </>
