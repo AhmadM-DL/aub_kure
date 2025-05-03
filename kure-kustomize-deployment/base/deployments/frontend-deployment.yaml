@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-app
+  name: frontend
   labels:
-    app: web-app
+    app: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: web-app
+      app: frontend
   template:
     metadata:
       labels:
-        app: web-app
+        app: frontend
     spec:
       containers:
-        - name: web-app
-          image: ama318/aub_kure-web-app:latest
+        - name: frontend
+          image: ama318/aub_kure-frontend:latest
           ports:
             - containerPort: 7860
           env:
-            - name: ORCHESTRATOR_HOST
-              value: orchestrator
-            - name: ORCHESTRATOR_PORT
+            - name: NEXT_PUBLIC_ORCHESTRATOR_HOST
+              value: localhost
+            - name: NEXT_PUBLIC_ORCHESTRATOR_PORT
               value: "8080"
             - name: DEBUG_LEVEL
               value: INFO
